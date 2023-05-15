@@ -1,6 +1,11 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-718a45dd9cf7e7f842a935f5ebbe5719a5e09af4491e668f4dbf3b35d5cca122.svg)](https://classroom.github.com/online_ide?assignment_repo_id=11110480&assignment_repo_type=AssignmentRepo)
-# Image Captioning - UAB Deep Learning Course
-Write here a short summary about your project. The text must include a short introduction and the targeted goals
+# Image Captioning - Group 2 - UAB Deep Learning Course
+Our main proposal for this project is to be able to train an image captioning model based on the Flickr 8k Dataset on Kaggle.
+
+*Click on Image to open Kaggle Dataset page:* 
+
+[<img src="docs/site-logo.svg" width="120"/>](https://www.kaggle.com/datasets/adityajn105/flickr8k)
+
+
 
 ## Code structure
 You must create as many folders as you consider. You can use the proposed structure or replace it by the one in the base code that you use as starting point. Do not forget to add Markdown files as needed to explain well the code and how to use it.
@@ -21,8 +26,10 @@ python main.py
 
 
 ## Contributors
-Write here the name and UAB mail of the group members
+* **Miguel Moral Hernández - miguel.moral@autonoma.cat**
+* **Àlex Sànchez Zurita - alex.sanchezz@autonoma.cat**
+* **Pol Medina Arévalo - pol.medina@autonoma.cat**
 
 Xarxes Neuronals i Aprenentatge Profund
-Grau de __Write here the name of your estudies (Artificial Intelligence, Data Engineering or Computational Mathematics & Data analyitics)__, 
+Grau de Intel·ligència Artificial, 
 UAB, 2023
