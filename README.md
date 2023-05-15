@@ -15,7 +15,7 @@ The given code is a simple CNN example training on the MNIST dataset. It shows h
 
 Before running the code you have to create a local environment with conda and activate it. The provided [environment.yml](https://github.com/DCC-UAB/XNAP-Project/environment.yml) file has all the required dependencies. Run the following command: ``conda env create --file environment.yml `` to create a conda environment with all the required dependencies and then activate it:
 ```
-conda activate xnap-example
+conda activate imgcaption
 ```
 
 To run the example code:
