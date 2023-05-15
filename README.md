@@ -1,6 +1,8 @@
 # Image Captioning - Group 2 - UAB Deep Learning Course
 Our main proposal for this project is to be able to train an image captioning model based on the Flickr 8k Dataset on Kaggle.
 
+## Test Label
+
 *Click on Image to open Kaggle Dataset page:* 
 
 [<img src="docs/site-logo.svg" width="120"/>](https://www.kaggle.com/datasets/adityajn105/flickr8k)
