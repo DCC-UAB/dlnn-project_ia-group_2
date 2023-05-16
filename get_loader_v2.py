@@ -115,6 +115,7 @@ def get_loader(data_dir, captions_file, transform=None,
     
     return data_loader
     
+    
 def main():
     img_dir = 'data/Images/'
     captions_file = 'data/captions.txt'
