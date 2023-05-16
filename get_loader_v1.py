@@ -5,6 +5,7 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from nltk.tokenize import word_tokenize
+from sklearn.model_selection import train_test_split
 from PIL import Image
 
 
@@ -47,11 +48,20 @@ class Vocabulary:
 
 # Class for our dataloader to access
 class ImageCaptionDataset(Dataset):
-    def __init__(self, data_dir: str, captions_file: str, transform=None, freq_threshold: int=5):
+    def __init__(self, data_dir, captions_file, transform=None, freq_threshold=5, train=True):
         # Data path
         self.data_dir = data_dir
+        
         # Image captions dataframe
-        self.df = pd.read_csv(captions_file)
+        df = pd.read_csv(captions_file)
+        # Create train or test dataset
+        unique = df['image'].unique()
+        train_images, test_images = train_test_split(unique, test_size=0.2, random_state=42)
+        if train:
+            self.df = df[df['image'].isin(train_images)]
+        else:
+            self.df = df[df['image'].isin(test_images)]
+            
         # Transform value
         self.transform = transform
         
@@ -65,11 +75,11 @@ class ImageCaptionDataset(Dataset):
         self.freq_threshold = freq_threshold
 
     def __len__(self):
-        return len(self.df)  
+        return len(self.df)
     
     def __getitem__(self, idx: int):
-        caption = self.captions[idx]
-        img_dir = self.images[idx]
+        caption = self.captions.iloc[idx]
+        img_dir = self.images.iloc[idx]
         img = Image.open(os.path.join(self.data_dir, img_dir)).convert('RGB')
         
         if self.transform is not None:
@@ -98,10 +108,10 @@ class CollatePadding:
         return imgs, targets
     
         
-def get_loader(data_dir, captions_file, transform=None, 
+def get_loader(data_dir, captions_file, transform=None, train=True,
                batch_size=16, num_workers=2, shuffle=True, pin_memory=True):
     
-    dataset = ImageCaptionDataset(data_dir=data_dir, captions_file=captions_file, transform=transform)
+    dataset = ImageCaptionDataset(data_dir=data_dir, captions_file=captions_file, transform=transform, train=train)
     
     pad_idx = dataset.vocab.stoi['<PAD>']
     
@@ -123,11 +133,17 @@ def main():
         ]
     )
 
-    dataloader = get_loader(data_dir=img_dir, 
+    train_dataloader = get_loader(data_dir=img_dir, 
                             captions_file=captions_file,
-                            transform=transform)
+                            transform=transform, 
+                            train=True)
+    
+    test_dataloader = get_loader(data_dir=img_dir, 
+                            captions_file=captions_file,
+                            transform=transform, 
+                            train=False)
 
-    for idx, (imgs, captions) in enumerate(dataloader):
+    for idx, (imgs, captions) in enumerate(test_dataloader):
         print(imgs.shape)
         print(captions.shape)
 
