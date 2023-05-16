@@ -1,5 +1,4 @@
 import os
-import spacy
 import pandas as pd
 import torch
 from torch.nn.utils.rnn import pad_sequence
@@ -9,7 +8,7 @@ import nltk
 from nltk.tokenize import word_tokenize, sent_tokenize
 from collections import Counter
 from PIL import Image
-
+from sklearn.model_selection import train_test_split
 
 # Class to generate the vocabulary for our LSTM
 class Vocabulary:
@@ -19,8 +18,8 @@ class Vocabulary:
         # Reversed ITOS dict
         self.stoi = {k:v for v,k in self.itos.items() }
         # Frequency threshold indicator, leading to ignore
-        self.freq_threshold = freq_threshold
-          
+        self.freq_threshold = freq_threshold  
+        
     def __len__(self):
         return len(self.itos)
     
@@ -42,19 +41,29 @@ class Vocabulary:
                     self.stoi[word] = idx
                     self.itos[idx] = word
                     idx += 1      
-     
+                    
     def to_one_hot(self, text: str):
         tokenized_text = self.vocab_tokenizer(text)
         return [self.stoi[word] if word in self.stoi else self.stoi['<UNK>'] for word in tokenized_text]
-    
-    
+
+      
 # Class for our dataloader to access
 class ImageCaptionDataset(Dataset):
-    def __init__(self, data_dir: str, captions_file: str, transform=None, freq_threshold: int=5):
+    def __init__(self, data_dir: str, captions_file: str, transform=None, freq_threshold: int=5, train=True):
         # Data path
         self.data_dir = data_dir
+        
         # Image captions dataframe
-        self.df = pd.read_csv(captions_file)
+        df = pd.read_csv(captions_file)
+        # Create train or test dataset
+        unique = df['image'].unique()
+        train_images, test_images = train_test_split(unique, test_size=0.2, random_state=42)
+        if train:
+            self.df = df[df['image'].isin(train_images)]
+    
+        else:
+            self.df = df[df['image'].isin(test_images)]
+            
         # Transform value
         self.transform = transform
         
@@ -66,75 +75,67 @@ class ImageCaptionDataset(Dataset):
         self.vocab = Vocabulary(freq_threshold)
         self.vocab.build_vocabulary(self.captions.tolist())
         self.freq_threshold = freq_threshold
-        self.max_caption_length = self.get_max_caption_length()
-
+        self.max_caption_length = self.get_max_caption_length()  
+        
     def __len__(self):
         return len(self.df)  
     
     def __getitem__(self, idx: int):
-        caption = self.captions[idx]
-        img_dir = self.images[idx]
+        caption = self.captions.iloc[idx]
+        img_dir = self.images.iloc[idx]
         img = Image.open(os.path.join(self.data_dir, img_dir)).convert('RGB')
-        
         if self.transform is not None:
             img = self.transform(img)
-        
         one_hot_caption = [self.vocab.stoi['<SOS>']]
         one_hot_caption.extend(self.vocab.to_one_hot(caption))
         one_hot_caption.append(self.vocab.stoi['<EOS>'])
-        
         padded_vector = self.padded_caption(one_hot_caption)
-        
         return img, torch.tensor(padded_vector)
-
+    
     def get_max_caption_length(self):
         max_length = 0
         for caption in self.captions:
             tokenized_caption = self.vocab.vocab_tokenizer(caption)
-            max_length = max(max_length, len(tokenized_caption))
-        
+            max_length = max(max_length, len(tokenized_caption))  
         return max_length 
     
     def padded_caption(self, caption):
         padded_caption = caption[:self.max_caption_length]
         padded_caption += [self.vocab.stoi["<PAD>"]] * (self.max_caption_length - len(caption))
-        print('Padded:', len(padded_caption))
         return padded_caption
 
 
-def get_loader(data_dir, captions_file, transform=None, 
-               batch_size=16, num_workers=2, shuffle=True, pin_memory=True):
-    
-    dataset = ImageCaptionDataset(data_dir=data_dir, captions_file=captions_file, transform=transform)
-    
+def get_loader(data_dir, captions_file, transform=None, train=True, batch_size=16, num_workers=2, shuffle=True, pin_memory=True):
+    dataset = ImageCaptionDataset(data_dir=data_dir, captions_file=captions_file, transform=transform, train=train)
     pad_idx = dataset.vocab.stoi['<PAD>']
-    
     data_loader  = DataLoader(dataset=dataset, batch_size=batch_size,
                          num_workers=num_workers, shuffle=shuffle,
                          pin_memory=pin_memory) 
-    
-    return data_loader
-    
-    
+    return data_loader 
+
+ 
 def main():
-    img_dir = 'data/Images/'
+    img_dir = "data/Images"
     captions_file = 'data/captions.txt'
     
-    transform = transforms.Compose(
-        [
+    transform = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.ToTensor()
-        ]
-        
-    )
-
-    dataloader = get_loader(data_dir=img_dir, 
+            transforms.ToTensor()])
+    
+    train_dataloader = get_loader(data_dir=img_dir, 
+                                    captions_file=captions_file,
+                                    transform=transform, 
+                                    train=True)
+            
+    test_dataloader = get_loader(data_dir=img_dir, 
                             captions_file=captions_file,
-                            transform=transform)
+                            transform=transform, 
+                            train=False)
 
-    for idx, (imgs, captions) in enumerate(dataloader):
+    for idx, (imgs, captions) in enumerate(train_dataloader):
         print(imgs.shape)
         print(captions.shape)
+
 
 if __name__ == "__main__":
     main()
