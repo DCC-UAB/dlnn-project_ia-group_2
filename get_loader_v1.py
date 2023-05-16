@@ -147,5 +147,6 @@ def main():
         print(imgs.shape)
         print(captions.shape)
 
+
 if __name__ == "__main__":
     main()
