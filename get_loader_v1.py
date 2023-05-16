@@ -1,14 +1,11 @@
 import os
-import spacy
 import pandas as pd
 import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+from nltk.tokenize import word_tokenize
 from PIL import Image
-
-
-spacy_eng = spacy.load('en_core_web_sm') #python -m spacy download en
 
 
 # Class to generate the vocabulary for our LSTM
@@ -26,7 +23,7 @@ class Vocabulary:
     
     @staticmethod
     def vocab_tokenizer(text: str):
-        return [token.text.lower() for token in spacy_eng.tokenizer(text)]
+        return [token.lower() for token in word_tokenize(text)]
     
     def build_vocabulary(self, captions):
         frequencies = {}
@@ -46,7 +43,6 @@ class Vocabulary:
     def to_one_hot(self, text: str):
         tokenized_text = self.vocab_tokenizer(text)
         return [self.stoi[word] if word in self.stoi else self.stoi['<UNK>'] for word in tokenized_text]
-
 
 
 # Class for our dataloader to access
@@ -86,7 +82,6 @@ class ImageCaptionDataset(Dataset):
         return img, torch.tensor(one_hot_caption)
     
     
-    
 # Class to PAD our captions
 class CollatePadding:
     def __init__(self, pad_idx):
@@ -102,8 +97,7 @@ class CollatePadding:
         
         return imgs, targets
     
-    
-    
+        
 def get_loader(data_dir, captions_file, transform=None, 
                batch_size=16, num_workers=2, shuffle=True, pin_memory=True):
     
@@ -116,7 +110,6 @@ def get_loader(data_dir, captions_file, transform=None,
                          pin_memory=pin_memory, collate_fn=CollatePadding(pad_idx=pad_idx)) 
     
     return data_loader
-
 
 
 def main():
