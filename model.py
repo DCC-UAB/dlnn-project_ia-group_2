@@ -34,7 +34,7 @@ class DecoderRNN(nn.Module):
         # Size of embed
         self.embed = nn.Embedding(vocab_size, embed_size)
         # LSTM from embedding size to hidden size
-        self.lstm = nn.LSTM(embed_size, hidden_size)
+        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers)
         # Linear layer to output
         self.linear = nn.Linear(hidden_size, vocab_size)
         # Set dropout value
@@ -42,7 +42,7 @@ class DecoderRNN(nn.Module):
         
     def forward(self, img_features, captions):
         # Run the captions through the embedding
-        embeddings = self.embed(self.dropout(captions))
+        embeddings = self.dropout(self.embed(captions))
         # Concatenate feature with embedded caption on DIM=0
         embeddings = torch.cat((img_features.unsqueeze(0), embeddings), dim=0)
         # Run the embedding output to the LSTM
@@ -55,27 +55,28 @@ class DecoderRNN(nn.Module):
 class EncoderCNN2DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
         super(EncoderCNN2DecoderRNN, self).__init__()
-        self.encoder = EncoderCNN(embed_size)
-        self.decoder = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers)
+        self.encoderCNN = EncoderCNN(embed_size)
+        self.decoderRNN = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers)
         
     def forward(self, images, captions):
-        features = self.encoder(images)
-        output = self.decoder(features, captions)
+        features = self.encoderCNN(images)
+        output = self.decoderRNN(features, captions)
         return output        
 
     def caption_image(self, image, vocabulary, max_length=40):
         caption = []
+        
         with torch.no_grad():
-            decoder_input = self.encoder(image).unsqueeze(0)
+            decoder_input = self.encoderCNN(image).unsqueeze(0)
             states = None
             
             for i in range(max_length):
-                output, states = self.decoder.lstm(decoder_input, states).squeeze(0)
-                output = self.decoder.linear(output)
+                output, states = self.decoderRNN.lstm(decoder_input, states)
+                output = self.decoderRNN.linear(output.squeeze(0))
                 predicted = output.argmax(1)
                 
                 caption.append(predicted.item())
-                decoder_input = self.decoder.embed(predicted).unsqueeze(0)
+                decoder_input = self.decoderRNN.embed(predicted).unsqueeze(0)
                 
                 if vocabulary.itos[predicted] == '<EOS>':
                     break
