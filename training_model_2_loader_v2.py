@@ -8,11 +8,12 @@ from model import EncoderCNN2DecoderRNN
 from get_loader_v2_train_val_test import get_loader, get_length_vocab, get_pad_index, get_vocab, show_image
 
 from get_loader_v2_train_val_test import Vocabulary
+from get_loader_v2_train_val_test import main
 
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
+'''
 data_dir = 'data/Images/'
 captions_file = 'data/captions.txt'
 
@@ -46,7 +47,7 @@ train_dataloader = get_loader(data_dir=data_dir, dataframe=train_df, transform=t
 val_dataloader = get_loader(data_dir=data_dir, dataframe=val_df, transform=transform)
 test_dataloader = get_loader(data_dir=data_dir, dataframe=test_df, transform=transform)
     
-
+'''
 class EncoderCNN(nn.Module):
     def __init__(self,embed_size):
         super(EncoderCNN,self).__init__()
@@ -113,14 +114,14 @@ class DecoderRNN(nn.Module):
             captions.append(predicted_word_idx.item())
             
             #end if <EOS detected>
-            if vocab.itos[predicted_word_idx.item()] == "<EOS>":
+            if vocab[predicted_word_idx.item()] == "<EOS>":
                 break
             
             #send generated word as the next caption
             inputs = self.embedding(predicted_word_idx.unsqueeze(0))
         
         #covert the vocab idx to words and return sentence
-        return [vocab.itos[idx] for idx in captions]
+        return [vocab[idx] for idx in captions]
 
 class EncoderDecoder(nn.Module):
     def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.3):
@@ -145,55 +146,92 @@ class EncoderDecoder(nn.Module):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Hyperparameters
-embed_size = 400
-hidden_size = 512
-vocab_size = lenght_train_df
-num_layers = 2
-learning_rate = 0.0001
+def main():
+    data_dir = 'data/Images/'
+    captions_file = 'data/captions.txt'
 
-# initialize model, loss etc
-model = EncoderDecoder(embed_size, hidden_size, vocab_size, num_layers).to(device)
-criterion = nn.CrossEntropyLoss(ignore_index=pad_index)
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor()])
 
-num_epochs = 20
-print_every = 2000
+    # Split data into train and test sets
+    df_captions = pd.read_csv(captions_file)
+    unique_images = df_captions['image'].unique()
+    train_images, test_images = train_test_split(unique_images, test_size=0.2, random_state=42)
+    train_images, val_images = train_test_split(train_images, test_size=0.2, random_state=42)
 
-for epoch in range(1,num_epochs+1):   
-    for idx, (image, captions) in enumerate(train_dataloader):
-        image,captions = image.to(device),captions.to(device)
+    train_df = df_captions[df_captions['image'].isin(train_images)]
+    val_df = df_captions[df_captions['image'].isin(val_images)]
+    test_df = df_captions[df_captions['image'].isin(test_images)]
 
-        # Zero the gradients.
-        optimizer.zero_grad()
+    lenght_train_df = get_length_vocab(data_dir=data_dir, dataframe=train_df, transform=transform)
+    lenght_val_df = get_length_vocab(data_dir=data_dir, dataframe=val_df, transform=transform)
+    lenght_test_df = get_length_vocab(data_dir=data_dir, dataframe=test_df, transform=transform)
 
-        # Feed forward
-        outputs = model(image, captions)
-        
-        # Calculate the batch loss.
-        loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+    pad_index = get_pad_index(data_dir=data_dir, dataframe=train_df, transform=transform)
 
-        
-        # Backward pass.
-        loss.backward()
+    vocab_train_df = get_vocab(data_dir=data_dir, dataframe=train_df, transform=transform)
+    vocab_val_df = get_vocab(data_dir=data_dir, dataframe=val_df, transform=transform)
+    vocab_test_df = get_vocab(data_dir=data_dir, dataframe=test_df, transform=transform)
+    
+    
+    # Create train, validation, and test data loaders
+    train_dataloader = get_loader(data_dir=data_dir, dataframe=train_df, transform=transform)
+    val_dataloader = get_loader(data_dir=data_dir, dataframe=val_df, transform=transform)
+    test_dataloader = get_loader(data_dir=data_dir, dataframe=test_df, transform=transform)
 
-        # Update the parameters in the optimizer.
-        optimizer.step()
-        
-        if (idx+1)%print_every == 0:
-            print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
+    # Hyperparameters
+    embed_size = 400
+    hidden_size = 512
+    vocab_size = lenght_train_df
+    num_layers = 2
+    learning_rate = 0.0001
+
+    # initialize model, loss etc
+    model = EncoderDecoder(embed_size, hidden_size, vocab_size, num_layers).to(device)
+    criterion = nn.CrossEntropyLoss(ignore_index=pad_index)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    num_epochs = 20
+    print_every = 2000
+
+    for epoch in range(1,num_epochs+1):   
+        for idx, (image, captions) in enumerate(train_dataloader):
+            image,captions = image.to(device),captions.to(device)
+
+            # Zero the gradients.
+            optimizer.zero_grad()
+
+            # Feed forward
+            outputs = model(image, captions)
             
+            # Calculate the batch loss.
+            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+
             
-            #generate the caption
-            model.eval()
-            with torch.no_grad():
-                dataiter = iter(train_dataloader)
-                img,_ = next(dataiter)
-                features = model.encoder(img[0:1].to(device))
-                print(f"features shape - {features.shape}")
-                caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab_train_df)
-                caption = ' '.join(caps)
-                print(caption)
-                show_image(img[0],title=caption)
+            # Backward pass.
+            loss.backward()
+
+            # Update the parameters in the optimizer.
+            optimizer.step()
+            
+            if (idx+1)%print_every == 0:
+                print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
                 
-            model.train()
+                
+                #generate the caption
+                model.eval()
+                with torch.no_grad():
+                    dataiter = iter(train_dataloader)
+                    img,_ = next(dataiter)
+                    features = model.encoder(img[0:1].to(device))
+                    print(f"features shape - {features.shape}")
+                    caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab_train_df)
+                    caption = ' '.join(caps)
+                    print(caption)
+                    show_image(img[0],title=caption)
+                    
+                model.train()
+if __name__ == "__main__":
+    main()
+    
