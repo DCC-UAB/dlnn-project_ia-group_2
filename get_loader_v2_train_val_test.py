@@ -109,6 +109,13 @@ def get_length_vocab(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     length = len(dataset.vocab)
     return length
+
+def get_pad_index(data_dir, dataframe, transform=None):
+    dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
+    pad_idx = dataset.vocab.stoi['<PAD>']
+    return pad_idx
+    
+
  
 def main():
     img_dir = "data/Images"
@@ -131,6 +138,8 @@ def main():
     lenght_val_df = get_length_vocab(data_dir=img_dir, dataframe=val_df, transform=transform)
     lenght_test_df = get_length_vocab(data_dir=img_dir, dataframe=test_df, transform=transform)
     
+    pad_index = get_pad_index(data_dir=img_dir, dataframe=train_df, transform=transform)
+    
     # Create train, validation, and test data loaders
     train_dataloader = get_loader(data_dir=img_dir, dataframe=train_df, transform=transform)
     val_dataloader = get_loader(data_dir=img_dir, dataframe=val_df, transform=transform)
@@ -139,22 +148,25 @@ def main():
     
     
     # Print the shapes of train, validation, and test batches
-    #for idx, (imgs, captions) in enumerate(train_dataloader):
-        #print("Train batch - Images shape:", imgs.shape)
-        #print("Train batch - Captions shape:", captions.shape)
+    for idx, (imgs, captions) in enumerate(train_dataloader):
+        print("Train batch - Images shape:", imgs.shape)
+        print("Train batch - Captions shape:", captions.shape)
+  
+
+    for idx, (imgs, captions) in enumerate(val_dataloader):
+        print("Validation batch - Images shape:", imgs.shape)
+        print("Validation batch - Captions shape:", captions.shape)
+    
+    for idx, (imgs, captions) in enumerate(test_dataloader):
+        print("Test batch - Images shape:", imgs.shape)
+        print("Test batch - Captions shape:", captions.shape)
+        
+    
     print(lenght_train_df)
     print(lenght_val_df)
     print(lenght_test_df)
-
-
     
-    #for idx, (imgs, captions) in enumerate(val_dataloader):
-        #print("Validation batch - Images shape:", imgs.shape)
-        #print("Validation batch - Captions shape:", captions.shape)
-    
-    #for idx, (imgs, captions) in enumerate(test_dataloader):
-        #print("Test batch - Images shape:", imgs.shape)
-        #print("Test batch - Captions shape:", captions.shape)
+    print(pad_index)
 
 if __name__ == "__main__":
     main()
