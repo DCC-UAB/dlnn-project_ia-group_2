@@ -105,10 +105,13 @@ def get_loader(data_dir, dataframe, transform=None, batch_size=16, num_workers=2
                          pin_memory=pin_memory) 
     return data_loader 
 
+def get_length_vocab(data_dir, dataframe, transform=None):
+    dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
+    return len(dataset.vocab)
  
 def main():
-    img_dir = r"C:\Users\Miguel\OneDrive\Escritorio\2n curs\2n Semestre\Neural Networks and Deep Learning\Project\dataset\Images"
-    captions_file = r"C:\Users\Miguel\OneDrive\Escritorio\2n curs\2n Semestre\Neural Networks and Deep Learning\Project\dataset\captions.txt"
+    img_dir = "data/Images"
+    captions_file = "data/captions.txt"
     transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor()])
@@ -123,23 +126,34 @@ def main():
     val_df = df_captions[df_captions['image'].isin(val_images)]
     test_df = df_captions[df_captions['image'].isin(test_images)]
     
+    lenght_train_df = get_length_vocab(data_dir=img_dir, dataframe=train_df, transform=transform)
+    lenght_val_df = get_length_vocab(data_dir=img_dir, dataframe=val_df, transform=transform)
+    lenght_test_df = get_length_vocab(data_dir=img_dir, dataframe=test_df, transform=transform)
+    
     # Create train, validation, and test data loaders
     train_dataloader = get_loader(data_dir=img_dir, dataframe=train_df, transform=transform)
     val_dataloader = get_loader(data_dir=img_dir, dataframe=val_df, transform=transform)
     test_dataloader = get_loader(data_dir=img_dir, dataframe=test_df, transform=transform)
     
+    
+    
     # Print the shapes of train, validation, and test batches
-    for idx, (imgs, captions) in enumerate(train_dataloader):
-        print("Train batch - Images shape:", imgs.shape)
-        print("Train batch - Captions shape:", captions.shape)
+    #for idx, (imgs, captions) in enumerate(train_dataloader):
+        #print("Train batch - Images shape:", imgs.shape)
+        #print("Train batch - Captions shape:", captions.shape)
+    print(lenght_train_df)
+    print(lenght_val_df)
+    print(lenght_test_df)
+
+
     
-    for idx, (imgs, captions) in enumerate(val_dataloader):
-        print("Validation batch - Images shape:", imgs.shape)
-        print("Validation batch - Captions shape:", captions.shape)
+    #for idx, (imgs, captions) in enumerate(val_dataloader):
+        #print("Validation batch - Images shape:", imgs.shape)
+        #print("Validation batch - Captions shape:", captions.shape)
     
-    for idx, (imgs, captions) in enumerate(test_dataloader):
-        print("Test batch - Images shape:", imgs.shape)
-        print("Test batch - Captions shape:", captions.shape)
+    #for idx, (imgs, captions) in enumerate(test_dataloader):
+        #print("Test batch - Images shape:", imgs.shape)
+        #print("Test batch - Captions shape:", captions.shape)
 
 if __name__ == "__main__":
     main()
