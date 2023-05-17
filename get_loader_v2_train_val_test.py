@@ -107,7 +107,8 @@ def get_loader(data_dir, dataframe, transform=None, batch_size=16, num_workers=2
 
 def get_length_vocab(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
-    return len(dataset.vocab)
+    length = len(dataset.vocab)
+    return length
  
 def main():
     img_dir = "data/Images"
