@@ -196,7 +196,7 @@ def main():
     print_every = 2000
 
     for epoch in range(1,num_epochs+1):   
-        for idx, (image, captions) in enumerate(train_dataloader):
+        for idx, (image, captions) in enumerate(iter(train_dataloader)):
             image,captions = image.to(device),captions.to(device)
 
             # Zero the gradients.

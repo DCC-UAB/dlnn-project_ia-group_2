@@ -102,7 +102,7 @@ class ImageCaptionDataset(Dataset):
         return padded_caption
 
 
-def get_loader(data_dir, dataframe, transform=None, batch_size=16, num_workers=2, shuffle=True, pin_memory=True):
+def get_loader(data_dir, dataframe, transform=None, batch_size=4, num_workers=1, shuffle=True, pin_memory=True):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     pad_idx = dataset.vocab.stoi['<PAD>']
     data_loader  = DataLoader(dataset=dataset, batch_size=batch_size,
