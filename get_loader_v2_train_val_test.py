@@ -118,7 +118,7 @@ def get_length_vocab(data_dir, dataframe, transform=None):
 def get_vocab(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     vocab = dataset.vocab
-    return vocab
+    return vocab.itos
 
 def show_image(tensor, title=None):
     """Imshow for Tensor"""
