@@ -9,6 +9,11 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from collections import Counter
 from PIL import Image
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from IPython import display
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 
 # Class to generate the vocabulary for our LSTM
 class Vocabulary:
@@ -109,6 +114,20 @@ def get_length_vocab(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     length = len(dataset.vocab)
     return length
+
+def get_vocab(data_dir, dataframe, transform=None):
+    dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
+    vocab = dataset.vocab
+    return vocab
+
+def show_image(tensor, title=None):
+    """Imshow for Tensor"""
+    tensor = tensor.numpy().transpose((1,2,0))
+    plt.imshow(tensor)
+    if title is not None:
+        plt.title(title)
+    plt.pause(0.001)
+
 
 def get_pad_index(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
