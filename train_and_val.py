@@ -1,11 +1,11 @@
 import torch
 from get_loader_v2_train_val_test import show_image
-import torch
 
-def validate(criterion, model, loader, vocab_size, vocab, device):
+
+def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
 
     val_loss = 0
-    print_every = 100
+    #print_every = 500
 
     model.eval()
     
@@ -18,16 +18,20 @@ def validate(criterion, model, loader, vocab_size, vocab, device):
             loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
             val_loss += loss.item()  
             
+            '''
             if (batch_idx+1)%print_every == 0:
-             
-                # Generate and visualize the caption
-                features = model.encoder(image[0:1].to(device))
-                print(f"features shape - {features.shape}")
-                caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-                caption = ' '.join(caps)
-                print(caption)
-                show_image(image[0],title=caption)                                                           
-                
+                    #generate the caption
+                    dataiter = iter(loader)
+                    img,_ = next(dataiter)
+                    features = model.encoder(img[0:1].to(device))
+                    print(f"features shape - {features.shape}")
+                    caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+                    caption = ' '.join(caps)
+                    print(caption)
+                    show_image(img[0],title=caption)
+'      
+
+            '''
 
     val_loss /= len(loader.dataset)
     print("\nValidation set: Average loss: {:.5f}".format(val_loss))
