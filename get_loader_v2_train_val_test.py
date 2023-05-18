@@ -179,7 +179,7 @@ def main():
     test_dataloader = get_val_test_loader(data_dir=img_dir, dataframe=test_df, transform=transform)
     
     
-    
+''' 
     # Print the shapes of train, validation, and test batches
     for idx, (imgs, captions) in enumerate(train_dataloader):
         print("Train batch - Images shape:", imgs.shape)
@@ -209,3 +209,4 @@ def main():
 if __name__ == "__main__":
     main()
     
+'''
