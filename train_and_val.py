@@ -5,7 +5,7 @@ import torch
 def validate(criterion, model, loader, vocab_size, vocab, device):
 
     val_loss = 0
-    print_every = 80
+    print_every = 100
 
     model.eval()
     
