@@ -8,7 +8,7 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 
-from train import *
+from train_and_val import *
 from test import *
 from utils.utils import *
 from tqdm.auto import tqdm
