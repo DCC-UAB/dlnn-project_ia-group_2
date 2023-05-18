@@ -7,7 +7,7 @@ import torch.optim as optim
 def validate(criterion, model, loader, vocab_size, vocab, device):
 
     val_loss = 0
-    print_every = 100
+    print_every = 10
 
     model.eval()
     
