@@ -122,7 +122,7 @@ def get_vocab(data_dir, dataframe, transform=None):
 
 def show_image(tensor, title=None):
     """Imshow for Tensor"""
-    tensor = tensor.numpy().transpose((1,2,0))
+    tensor = tensor.cpu().numpy().transpose((1,2,0))
     plt.imshow(tensor)
     if title is not None:
         plt.title(title)
