@@ -54,7 +54,7 @@ class Vocabulary:
       
 # Class for our dataloader to access
 class ImageCaptionDataset(Dataset):
-    def __init__(self, data_dir: str, dataframe, transform=None, freq_threshold: int=5):
+    def __init__(self, data_dir: str, dataframe, transform=None, freq_threshold: int=1):
         # Data path
         self.data_dir = data_dir
         
