@@ -174,9 +174,9 @@ def main():
     pad_index = get_pad_index(data_dir=img_dir, dataframe=train_df, transform=transform)
     
     # Create train, validation, and test data loaders
-    train_dataloader = get_loader(data_dir=img_dir, dataframe=train_df, transform=transform)
-    val_dataloader = get_loader(data_dir=img_dir, dataframe=val_df, transform=transform)
-    test_dataloader = get_loader(data_dir=img_dir, dataframe=test_df, transform=transform)
+    train_dataloader = get_train_loader(data_dir=img_dir, dataframe=train_df, transform=transform)
+    val_dataloader = get_val_test_loader(data_dir=img_dir, dataframe=val_df, transform=transform)
+    test_dataloader = get_val_test_loader(data_dir=img_dir, dataframe=test_df, transform=transform)
     
     
     
