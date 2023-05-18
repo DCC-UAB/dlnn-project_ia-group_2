@@ -1,13 +1,11 @@
 import torch
 from get_loader_v2_train_val_test import show_image
 import torch
-import torch.nn as nn
-import torch.optim as optim
 
 def validate(criterion, model, loader, vocab_size, vocab, device):
 
     val_loss = 0
-    print_every = 10
+    print_every = 80
 
     model.eval()
     
