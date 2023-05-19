@@ -44,7 +44,7 @@ def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendr
 def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
     
     total_loss = 0.0
-    print_every = 100
+    print_every = 250
 
     model.train()
 
