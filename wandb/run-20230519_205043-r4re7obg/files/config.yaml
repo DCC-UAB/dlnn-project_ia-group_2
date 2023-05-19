@@ -8,7 +8,7 @@ _wandb:
     framework: torch
     is_jupyter_run: true
     is_kaggle_kernel: false
-    start_time: 1684521389.657781
+    start_time: 1684522243.60895
     t:
       1:
       - 1
@@ -24,7 +24,7 @@ _wandb:
       - 55
       3:
       - 1
-      - 2
+      - 3
       - 19
       - 23
       4: 3.10.9
@@ -47,10 +47,10 @@ num_layers:
   value: 2
 learning_rate:
   desc: null
-  value: 0.0003
+  value: 0.001
 device:
   desc: null
   value: cuda
 scheduler:
   desc: null
-  value: <torch.optim.lr_scheduler.ReduceLROnPlateau object at 0x000001C7EBF867D0>
+  value: <torch.optim.lr_scheduler.ReduceLROnPlateau object at 0x00000240EA1F6980>
