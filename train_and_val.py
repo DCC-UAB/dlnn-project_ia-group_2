@@ -3,6 +3,7 @@ from get_loader_v2_train_val_test import show_image
 import matplotlib.pyplot as plt
 
 
+
 def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
 
     val_loss = 0
