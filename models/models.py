@@ -15,13 +15,12 @@ class EncoderCNN(nn.Module):
         modules = list(resnet.children())[:-1] # To extract the features of Rsenet from the last layer before the Softmax is applied
         self.resnet = nn.Sequential(*modules)
         self.embed = nn.Linear(resnet.fc.in_features,embed_size) 
-        self.bn = nn.BatchNorm1d(embed_size)  # Add batch normalization
         
     def forward(self,images):
         features = self.resnet(images) # resenet features shape - torch.Size([4, 2048, 1, 1])
         features = features.view(features.size(0),-1)  # resenet features viewed shape - torch.Size([4, 2048])
         features = self.embed(features) # resenet features embed shape - torch.Size([4, 400]
-        features = self.bn(features)  # Apply batch normalization
+        
         return features
 
 
@@ -43,7 +42,6 @@ class DecoderRNN(nn.Module):
         x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
         # shape of x - torch.Size([4, 15, 400])
         x,_ = self.lstm(x)
-        x = self.batch_norm(x)  # Apply batch normalization
         
         # shape of x after lstm - torch.Size([4, 15, 512])
         x = self.fcn(x)
