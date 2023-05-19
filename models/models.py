@@ -16,12 +16,9 @@ class EncoderCNN(nn.Module):
         self.embed = nn.Linear(resnet.fc.in_features,embed_size) 
         
     def forward(self,images):
-        features = self.resnet(images)
-#         print(f"resenet features shape - {features.shape}")
-        features = features.view(features.size(0),-1)
-#         print(f"resenet features viewed shape - {features.shape}")
-        features = self.embed(features)
-#         print(f"resenet features embed shape - {features.shape}")
+        features = self.resnet(images) # resenet features shape - torch.Size([4, 2048, 1, 1])
+        features = features.view(features.size(0),-1)  # resenet features viewed shape - torch.Size([4, 2048])
+        features = self.embed(features) # resenet features embed shape - torch.Size([4, 400]
         return features
 
 
@@ -36,22 +33,17 @@ class DecoderRNN(nn.Module):
     
     def forward(self,features, captions):
         # vectorize the caption
-#         print(f"captions - {captions[:,:-1]}")
-#         print(f"caption shape - {captions[:,:-1].shape}")
-        embeds = self.embedding(captions[:,:-1])
-#         print(f"shape of embeds - {embeds.shape}")
-        # concat the features and captions
-#         print(f"features shape - {features.shape}")
-#         print(f"features unsqueeze at index 1 shape - {features.unsqueeze(1).shape}")
-        x = torch.cat((features.unsqueeze(1),embeds),dim=1)
-#         print(f"shape of x - {x.shape}")
+        # caption shape - torch.Size([4, 14])
+        embeds = self.embedding(captions[:,:-1]) # shape of embeds - torch.Size([4, 14, 400])
+        # features shape - torch.Size([4, 400])
+        x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
+        # shape of x - torch.Size([4, 15, 400])
         x,_ = self.lstm(x)
-#         print(f"shape of x after lstm - {x.shape}")
+        # shape of x after lstm - torch.Size([4, 15, 512])
         x = self.fcn(x)
-#         print(f"shape of x after fcn - {x.shape}")
         return x
-    
-    def generate_caption(self,inputs,hidden=None,max_len=20,vocab=None):
+
+    def generate_caption(self,inputs,hidden=None,max_len=30,vocab=None):
     # Inference part
     # Given the image features generate the captions
     
