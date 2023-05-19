@@ -1,5 +1,6 @@
 import torch
 from get_loader_v2_train_val_test import show_image
+import matplotlib.pyplot as plt
 
 
 def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
@@ -42,7 +43,7 @@ def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendr
 def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
     
     total_loss = 0.0
-    print_every = 250
+    print_every = 500
 
     model.train()
 
@@ -70,6 +71,65 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
 
     return total_loss / len(loader.dataset)
 
+
+def train_val_visualize_captions(num_epochs, train_loader, val_loader, model, optimizer, criterion, vocab_size, vocab, device):
+    
+    print_every = 500
+    total_loss = 0.0
+    val_loss = 0.0
+    
+    
+    for epoch in range(num_epochs):   
+        model.train()
+        for idx, (image, captions) in enumerate(iter(train_loader)):
+            image,captions = image.to(device),captions.to(device)
+
+            # Zero the gradients.
+            optimizer.zero_grad()
+            
+            # Outputs
+            outputs = model(image, captions)
+            
+            # Calculate the batch loss.
+            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+
+            # Backward pass.
+            loss.backward()
+
+            # Update the parameters in the optimizer.
+            optimizer.step()
+            
+            total_loss += loss.item()
+            
+            if (idx+1)%print_every == 0:
+                print("Train Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
+                
+                #generate the caption
+                model.eval()
+                with torch.no_grad():
+                    dataiter = iter(val_loader)
+                    img,_ = next(dataiter)
+                    features = model.encoder(img[0:1].to(device))
+                    print(f"features shape - {features.shape}")
+                    caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+                    caption = ' '.join(caps)
+                    print(caption)
+                    show_image(img[0],title=caption)
+                    
+        model.eval()       
+        # val loss     
+        with torch.no_grad():
+            for batch_idx, (image, captions) in enumerate(iter(val_loader)):
+                image, captions = image.to(device), captions.to(device)
+                outputs = model(image, captions)
+                loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+                val_loss += loss.item()  
+                
+        val_loss /= len(val_loader.dataset)
+        print("\nValidation set: Average loss: {:.5f}".format(val_loss))
+    
+    return (total_loss / len(train_loader.dataset)), (val_loss)
+                    
 '''
 from tqdm.auto import tqdm
 import wandb

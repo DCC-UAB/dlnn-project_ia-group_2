@@ -141,8 +141,6 @@ def get_pad_index(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     pad_idx = dataset.vocab.stoi['<PAD>']
     return pad_idx
-    
-
  
 def main():
     img_dir = "data/Images"
