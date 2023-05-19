@@ -72,48 +72,8 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
 
     return total_loss / len(loader.dataset)
 
-
-def train_val_visualize_captions(epoch, train_loader, val_loader, model, optimizer, criterion, vocab_size, vocab, device):
-    print_every = 500
-    total_loss = 0.0
-    model.train()
-    for idx, (image, captions) in enumerate(train_loader):
-        image, captions = image.to(device), captions.to(device)
-
-        # Zero the gradients.
-        optimizer.zero_grad()
-
-        # Outputs
-        outputs = model(image, captions)
-
-        # Calculate the batch loss.
-        loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-
-        # Backward pass.
-        loss.backward()
-
-        # Update the parameters in the optimizer.
-        optimizer.step()
-
-        total_loss += loss.item()
-
-        if (idx + 1) % print_every == 0:
-            print("Train Epoch: {} Batch: {} Loss: {:.5f}".format(epoch, idx+1, loss.item()))
-
-            # Generate captions for a validation image
-            model.eval()
-            with torch.no_grad():
-                dataiter = iter(val_loader)
-                img, _ = next(dataiter)
-                features = model.encoder(img[0:1].to(device))
-                print("Features shape -", features.shape)
-                caps = model.decoder.generate_caption(features.unsqueeze(0), vocab=vocab)
-                caption = ' '.join(caps)
-                print("Generated Caption:", caption)
-                show_image(img[0], title=caption)
     
-    
-    
+
 '''
 
 from tqdm.auto import tqdm
