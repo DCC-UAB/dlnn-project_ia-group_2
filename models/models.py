@@ -24,10 +24,11 @@ class EncoderCNN(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.3):
+    def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.5):
         super(DecoderRNN,self).__init__()
         self.embedding = nn.Embedding(vocab_size,embed_size)
         self.lstm = nn.LSTM(embed_size,hidden_size,num_layers=num_layers,batch_first=True)
+        self.batch_norm = nn.BatchNorm1d(hidden_size)  # Add batch normalization layer
         self.fcn = nn.Linear(hidden_size,vocab_size)
         self.drop = nn.Dropout(drop_prob)
     
@@ -39,6 +40,8 @@ class DecoderRNN(nn.Module):
         x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
         # shape of x - torch.Size([4, 15, 400])
         x,_ = self.lstm(x)
+        x = self.batch_norm(x)  # Apply batch normalization
+        
         # shape of x after lstm - torch.Size([4, 15, 512])
         x = self.fcn(x)
         return x
