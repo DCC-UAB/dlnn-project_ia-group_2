@@ -44,7 +44,6 @@ class DecoderRNN(nn.Module):
         return x
 
     def generate_caption(self,inputs,hidden=None,max_len=25,vocab=None):
-    # Inference part
     # Given the image features generate the captions
     
         batch_size = inputs.size(0)
