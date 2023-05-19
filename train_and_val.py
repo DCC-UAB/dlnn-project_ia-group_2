@@ -72,6 +72,49 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
 
     return total_loss / len(loader.dataset)
 
+
+def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
+    print_every = 250
+    model.train()
+    for epoch in range(1, epochs+1):
+        for idx, (image, captions) in enumerate(iter(train_loader)):
+                image,captions = image.to(device),captions.to(device)
+
+                # Zero the gradients.
+                optimizer.zero_grad()
+
+                # Feed forward
+                outputs = model(image, captions)
+                
+                # Calculate the batch loss.
+                loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+
+                
+                # Backward pass.
+                loss.backward()
+
+                # Update the parameters in the optimizer.
+                optimizer.step()
+                
+                if (idx+1)%print_every == 0:
+                    print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
+                    
+                    
+                    #generate the caption
+                    model.eval()
+                    with torch.no_grad():
+                        dataiter = iter(val_dataloader)
+                        img,_ = next(dataiter)
+                        features = model.encoder(img[0:1].to(device))
+                        print(f"features shape - {features.shape}")
+                        caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+                        caption = ' '.join(caps)
+                        print(caption)
+                        show_image(img[0],title=caption)
+                        
+                    model.train()
+                    
+   
     
 
 '''
