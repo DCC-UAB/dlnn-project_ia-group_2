@@ -103,7 +103,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     #generate the caption
                     model.eval()
                     with torch.no_grad():
-                        dataiter = iter(val_dataloader)
+                        dataiter = iter(val_loader)
                         img,_ = next(dataiter)
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
