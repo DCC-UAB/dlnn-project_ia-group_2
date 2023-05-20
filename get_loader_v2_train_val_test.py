@@ -110,7 +110,7 @@ def get_train_loader(data_dir, dataframe, transform=None, batch_size=32, num_wor
                          pin_memory=pin_memory) 
     return data_loader 
 
-def get_val_test_loader(data_dir, dataframe, transform=None, batch_size=8, num_workers=1, shuffle=True, pin_memory=True):
+def get_val_test_loader(data_dir, dataframe, transform=None, batch_size=16, num_workers=1, shuffle=True, pin_memory=True):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     pad_idx = dataset.vocab.stoi['<PAD>']
     data_loader  = DataLoader(dataset=dataset, batch_size=batch_size,
