@@ -5,7 +5,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 
-def validate(criterion, model, loader, scheduler, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
+def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
 
     val_loss = 0
     #print_every = 500
@@ -38,7 +38,7 @@ def validate(criterion, model, loader, scheduler, vocab_size, vocab, device): # 
 
     val_loss /= len(loader.dataset)
     # Update the learning rate scheduler
-    scheduler.step(val_loss)
+    #scheduler.step(val_loss)
     print("\nValidation set: Average loss: {:.5f}".format(val_loss))
 
     return val_loss
