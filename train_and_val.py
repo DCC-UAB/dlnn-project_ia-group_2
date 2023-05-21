@@ -27,7 +27,7 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
 
 
 def train(epoch, criterion, model, optimizer, loader, device):
-    
+    '''
     total_loss = 0.0
     print_every = 1000
 
@@ -54,7 +54,35 @@ def train(epoch, criterion, model, optimizer, loader, device):
             print("Train Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
 
     return total_loss / len(loader.dataset)
+    '''
+    
+    total_loss = 0.0
+    print_every = 1000
 
+    model.train()
+
+    for batch_idx, (images, captions) in enumerate(loader):
+        images = images.to(device)
+        captions = captions.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images, captions)
+        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
+        loss.backward()
+        optimizer.step()
+
+        total_loss += loss.item()
+
+        if (batch_idx + 1) % print_every == 0:
+            print("Train Epoch: {} Batch [{}/{}]\tLoss: {:.5f}".format(
+                epoch, batch_idx + 1, len(loader), loss.item()
+            ))
+
+    average_loss = total_loss / len(loader.dataset)
+    print("Train Epoch: {} Average Loss: {:.5f}".format(epoch, average_loss))
+
+    return average_loss
 
 def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
     print_every = 250
