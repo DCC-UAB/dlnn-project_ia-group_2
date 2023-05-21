@@ -29,7 +29,7 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
 def train(epoch, criterion, model, optimizer, loader, device):
     
     total_loss = 0.0
-    print_every = 250
+    print_every = 1000
 
     model.train()
 
