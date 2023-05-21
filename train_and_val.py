@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
+def validate(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
 
     model.eval()
     total_loss = 0
@@ -26,7 +26,7 @@ def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendr
     return average_loss
 
 
-def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
+def train(epoch, criterion, model, optimizer, loader, device):
     
     total_loss = 0.0
     print_every = 250
@@ -42,7 +42,7 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
         
         outputs = model(image, captions)
         # Calculate the batch loss
-        loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
         # Backward pass.
         loss.backward()
         # Update the parameters in the optimizer.
@@ -98,7 +98,6 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     model.train()
                     
    
-    
 
 '''
 
