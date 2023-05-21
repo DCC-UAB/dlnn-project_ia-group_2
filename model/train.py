@@ -58,7 +58,7 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
 
 
 def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
-    print_every = 250
+    print_every = 400
     model.train()
     for epoch in range(1, epochs+1):
         for idx, (image, captions) in enumerate(iter(train_loader)):
