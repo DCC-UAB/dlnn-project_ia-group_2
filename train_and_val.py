@@ -27,7 +27,8 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
 
 
 def train(epoch, criterion, model, optimizer, loader, device):
-
+    
+    '''
     total_samples = 0
     total_loss = 0.0
     print_every = 1000
@@ -55,6 +56,40 @@ def train(epoch, criterion, model, optimizer, loader, device):
 
     average_loss = total_loss / total_samples
     print("Train Epoch: {} Average Loss: {:.5f}".format(epoch, average_loss))
+
+    return average_loss
+    '''
+    print_every = 1000
+    losses = []
+    
+    model.train()
+        
+    for batch_idx, (images, captions) in enumerate(iter(loader)):
+        # Zero gradients
+        optimizer.zero_grad()
+
+        images, captions = images.to(device), captions.to(device)
+        
+        outputs = model(images, captions)
+        
+        # Calculate the batch loss
+        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
+        
+        # Backward pass.
+        loss.backward()
+        
+        # Update the parameters in the optimizer.
+        optimizer.step()     
+        
+        losses.append(loss.item())
+          
+        if (batch_idx) % print_every == 0:
+             print("Train Epoch: {} Batch [{}/{}]\tLoss: {:.5f}".format(
+                epoch, batch_idx, len(loader), loss.item()
+            ))
+            
+        average_loss = sum(losses) / len(losses)
+        print(f'Train set: Average loss: {average_loss}')
 
     return average_loss
 
