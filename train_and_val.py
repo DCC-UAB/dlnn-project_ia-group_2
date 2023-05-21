@@ -21,21 +21,6 @@ def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendr
             loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
             val_loss += loss.item()  
             
-            '''
-            if (batch_idx+1)%print_every == 0:
-                    #generate the caption
-                    dataiter = iter(loader)
-                    img,_ = next(dataiter)
-                    features = model.encoder(img[0:1].to(device))
-                    print(f"features shape - {features.shape}")
-                    caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-                    caption = ' '.join(caps)
-                    print(caption)
-                    show_image(img[0],title=caption)
-'      
-
-            '''
-
     val_loss /= len(loader.dataset)
     # Update the learning rate scheduler
     #scheduler.step(val_loss)
