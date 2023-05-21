@@ -4,30 +4,8 @@ import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-
 def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
-    '''
-    val_loss = 0
-    #print_every = 500
 
-    model.eval()
-    
-    with torch.no_grad():
-
-        for batch_idx, (image, captions) in enumerate(iter(loader)):
-
-            image, captions = image.to(device), captions.to(device)
-            outputs = model(image, captions)
-            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-            val_loss += loss.item()  
-            
-    val_loss /= len(loader.dataset)
-    # Update the learning rate scheduler
-    #scheduler.step(val_loss)
-    print("\nValidation set: Average loss: {:.5f}".format(val_loss))
-
-    return val_loss
-    '''
     model.eval()
     total_loss = 0
     total_samples = 0
@@ -74,8 +52,6 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
           
         if (batch_idx+1)%print_every == 0:
             print("Train Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
-
- 
 
     return total_loss / len(loader.dataset)
 
