@@ -27,35 +27,8 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
 
 
 def train(epoch, criterion, model, optimizer, loader, device):
-    '''
-    total_loss = 0.0
-    print_every = 1000
 
-    model.train()
-
-    for batch_idx, (image, captions) in enumerate(iter(loader)):
-        
-        # Zero gradients
-        optimizer.zero_grad()
-
-        image,captions = image.to(device),captions.to(device)
-        
-        outputs = model(image, captions)
-        # Calculate the batch loss
-        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
-        # Backward pass.
-        loss.backward()
-        # Update the parameters in the optimizer.
-        optimizer.step()     
-        
-        total_loss += loss.item()  
-          
-        if (batch_idx+1)%print_every == 0:
-            print("Train Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
-
-    return total_loss / len(loader.dataset)
-    '''
-    
+    total_samples = 0
     total_loss = 0.0
     print_every = 1000
 
@@ -64,7 +37,8 @@ def train(epoch, criterion, model, optimizer, loader, device):
     for batch_idx, (images, captions) in enumerate(loader):
         images = images.to(device)
         captions = captions.to(device)
-
+        batch_size = images.size(0)
+        total_samples += batch_size
         optimizer.zero_grad()
 
         outputs = model(images, captions)
@@ -79,7 +53,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
                 epoch, batch_idx + 1, len(loader), loss.item()
             ))
 
-    average_loss = total_loss / len(loader.dataset)
+    average_loss = total_loss / total_samples
     print("Train Epoch: {} Average Loss: {:.5f}".format(epoch, average_loss))
 
     return average_loss
