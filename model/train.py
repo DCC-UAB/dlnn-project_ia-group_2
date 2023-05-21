@@ -1,79 +1,60 @@
 import torch
-from get_loader_v2_train_val_test import show_image
+import nltk
+import random
+from loaders import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-
 def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
-
-    val_loss = 0
-    #print_every = 500
-
+    losses = []
     model.eval()
     
     with torch.no_grad():
-
         for batch_idx, (image, captions) in enumerate(iter(loader)):
 
             image, captions = image.to(device), captions.to(device)
             outputs = model(image, captions)
-            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-            val_loss += loss.item()  
             
-            '''
-            if (batch_idx+1)%print_every == 0:
-                    #generate the caption
-                    dataiter = iter(loader)
-                    img,_ = next(dataiter)
-                    features = model.encoder(img[0:1].to(device))
-                    print(f"features shape - {features.shape}")
-                    caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-                    caption = ' '.join(caps)
-                    print(caption)
-                    show_image(img[0],title=caption)
-'      
+            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+            
+            losses.append(loss.item())
 
-            '''
+    val_loss = torch.mean(torch.tensor(losses))
 
-    val_loss /= len(loader.dataset)
-    # Update the learning rate scheduler
-    #scheduler.step(val_loss)
-    print("\nValidation set: Average loss: {:.5f}".format(val_loss))
-
+    print("Validation set: Average loss: {:.5f}".format(val_loss))
     return val_loss
 
 
 def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
+    print_every = 500
+    losses = []
     
-    total_loss = 0.0
-    print_every = 250
-
     model.train()
-
-    for batch_idx, (image, captions) in enumerate(iter(loader)):
         
+    for batch_idx, (images, captions) in enumerate(iter(loader)):
         # Zero gradients
         optimizer.zero_grad()
 
-        image,captions = image.to(device),captions.to(device)
+        images, captions = images.to(device), captions.to(device)
         
-        outputs = model(image, captions)
+        outputs = model(images, captions)
+        
         # Calculate the batch loss
         loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+        
         # Backward pass.
         loss.backward()
+        
         # Update the parameters in the optimizer.
         optimizer.step()     
         
-        total_loss += loss.item()  
+        losses.append(loss.item())
           
-        if (batch_idx+1)%print_every == 0:
-            print("Train Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
+        if (batch_idx) % print_every == 0:
+            print("Train Epoch: {}; Loss: {:.5f}".format(epoch + 1, loss.item()))
 
- 
-
-    return total_loss / len(loader.dataset)
+    return losses
 
 
 def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
