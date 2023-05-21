@@ -6,7 +6,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendria q ser train_vocab_df
-
+    '''
     val_loss = 0
     #print_every = 500
 
@@ -27,6 +27,25 @@ def validate(criterion, model, loader, vocab_size, vocab, device): # vocab tendr
     print("\nValidation set: Average loss: {:.5f}".format(val_loss))
 
     return val_loss
+    '''
+    model.eval()
+    total_loss = 0
+    total_samples = 0
+
+    with torch.no_grad():
+        for images, captions in loader:
+            images = images.to(device)
+            captions = captions.to(device)
+            batch_size = images.size(0)
+            total_samples += batch_size
+
+            outputs = model(images, captions)
+            loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
+            total_loss += loss.item() * batch_size
+
+    average_loss = total_loss / total_samples
+    print("Validation set: Average loss: {:.5f}".format(average_loss))
+    return average_loss
 
 
 def train(epoch, criterion, model, optimizer, loader, vocab_size, device):
