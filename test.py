@@ -9,7 +9,7 @@ def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
     total_samples = 0
 
     with torch.no_grad():
-        for images, captions in loader:
+        for images, captions,_ in loader:
             images = images.to(device)
             captions = captions.to(device)
             batch_size = images.size(0)

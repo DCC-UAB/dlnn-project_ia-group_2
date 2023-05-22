@@ -12,7 +12,7 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
     total_samples = 0
 
     with torch.no_grad():
-        for images, captions, _ in loader:
+        for images, captions,_ in loader:
             images = images.to(device)
             captions = captions.to(device)
             batch_size = images.size(0)
@@ -36,7 +36,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
 
     model.train()
 
-    for batch_idx, (images, captions, _) in enumerate(loader):
+    for batch_idx, (images, captions,_) in enumerate(loader):
         images = images.to(device)
         captions = captions.to(device)
         batch_size = images.size(0)
