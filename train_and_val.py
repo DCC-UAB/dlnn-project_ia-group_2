@@ -94,7 +94,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
     return average_loss
     '''
 
-def val_visualize_captions(model, train_loader, test_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
+def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
     print_every = 1000
     model.train()
     for epoch in range(1, epochs+1):
@@ -123,7 +123,7 @@ def val_visualize_captions(model, train_loader, test_loader, criterion, optimize
                     #generate the caption
                     model.eval()
                     with torch.no_grad():
-                        dataiter = iter(test_loader)
+                        dataiter = iter(val_loader)
                         img,_,img_dir = next(dataiter)
                         df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
                         true_caps = [caption for caption in df_filtered]
