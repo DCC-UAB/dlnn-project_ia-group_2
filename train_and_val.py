@@ -110,13 +110,11 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                 # Calculate the batch loss.
                 loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
 
-                
                 # Backward pass.
                 loss.backward()
 
                 # Update the parameters in the optimizer.
                 optimizer.step()
-                
                 if (idx+1)%print_every == 0:
                     print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
                 
@@ -125,7 +123,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     with torch.no_grad():
                         dataiter = iter(val_loader)
                         img,captions = next(dataiter)
-                        caption = captions[0:1][0].tolist()
+                        caption = captions[0:1][0].tolist() 
                         s = [vocab_val_df[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
                         print("Original:", ' '.join(s))
                         features = model.encoder(img[0:1].to(device))
@@ -135,8 +133,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                         caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
                         caption = ' '.join(caps)
                         print(caption)
-                        show_image(img[0],title=caption)
-                        
+                        show_image(img[0],title=caption)  
                     model.train()
                     
    
