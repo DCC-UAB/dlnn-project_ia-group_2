@@ -25,11 +25,6 @@ def best_bleu_cap(list_original_caps, pred_cap):
         if bleu_score > best_bleu_score:
             best_bleu_score = bleu_score
             best_caption = reference_caption
-
-    # Imprimir la mejor leyenda y su puntaje BLEU
-    print("Best original caption (1 out of 5):", best_caption)
-    print("Predicted caption:", generated_caption)
-    print("Puntaje BLEU:", best_bleu_score) 
     
     return best_caption, best_bleu_score
 

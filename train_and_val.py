@@ -62,7 +62,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
     return average_loss
    
 
-def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, vocab_val_df):
+def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
     print_every = 250
     model.train()
     for epoch in range(1, epochs+1):
@@ -90,18 +90,19 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     model.eval()
                     with torch.no_grad():
                         dataiter = iter(val_loader)
-                        img,captions = next(dataiter)
-                        caption = captions[0:1][0].tolist() 
-                        s = [vocab_val_df[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
-                        print("Original:", ' '.join(s))
+                        img,captions,img_dir = next(dataiter)
+                        df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
+                        original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
-                        #print(f"True captions of the image:\n {true_caps}")
-                        print("Predicted caption:")
                         caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-                        caption = ' '.join(caps)
-                        print(caption)
-                        show_image(img[0],title=caption)  
+                        pred_caption = ' '.join(caps)
+                        pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
+                        original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
+                        print("Best original caption (1 out of 5):", original_caption)
+                        print("Predicted caption:", pred_caption)
+                        print("Puntaje BLEU:", bleu_score)
+                        show_image(img[0],title=pred_caption)
                     model.train()
                     
 
