@@ -94,7 +94,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
     return average_loss
     '''
 
-def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
+def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, vocab_val_df):
     print_every = 1000
     model.train()
     for epoch in range(1, epochs+1):
@@ -124,9 +124,10 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     model.eval()
                     with torch.no_grad():
                         dataiter = iter(val_loader)
-                        img,_,_ = next(dataiter)
-                        #df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
-                        #true_caps = [caption for caption in df_filtered]
+                        img,captions,imgs_dir = next(dataiter)
+                        caption = captions[0:1][0].tolist()
+                        s = [vocab_val_df[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
+                        print("Original:", ' '.join(s))
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
                         #print(f"True captions of the image:\n {true_caps}")
