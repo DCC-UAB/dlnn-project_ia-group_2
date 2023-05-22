@@ -2,6 +2,8 @@ import torch
 from get_loader_v2_train_val_test import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+import nltk
+from utils.utils import best_bleu_cap
 
 
 def validate(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
@@ -58,41 +60,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
     print("Train Epoch: {} Average Loss: {:.5f}".format(epoch, average_loss))
 
     return average_loss
-    '''
-    print_every = 1000
-    losses = []
-    
-    model.train()
-        
-    for batch_idx, (images, captions) in enumerate(iter(loader)):
-        # Zero gradients
-        optimizer.zero_grad()
-
-        images, captions = images.to(device), captions.to(device)
-        
-        outputs = model(images, captions)
-        
-        # Calculate the batch loss
-        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
-        
-        # Backward pass.
-        loss.backward()
-        
-        # Update the parameters in the optimizer.
-        optimizer.step()     
-        
-        losses.append(loss.item())
-          
-        if (batch_idx) % print_every == 0:
-             print("Train Epoch: {} Batch [{}/{}]\tLoss: {:.5f}".format(
-                epoch, batch_idx, len(loader), loss.item()
-            ))
-            
-        average_loss = sum(losses) / len(losses)
-        print(f'Train set: Average loss: {average_loss}')
-
-    return average_loss
-    '''
+   
 
 def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, vocab_val_df):
     print_every = 250
@@ -136,7 +104,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                         show_image(img[0],title=caption)  
                     model.train()
                     
-   
+
 
 '''
 
