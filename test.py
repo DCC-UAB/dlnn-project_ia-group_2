@@ -22,46 +22,24 @@ def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
     average_loss = total_loss / total_samples
     return average_loss
 
-def val_visualize_captions_test(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
-    print_every = 250
-    model.train()
-    for epoch in range(1, epochs+1):
-        for idx, (image, captions) in enumerate(iter(train_loader)):
-                image,captions = image.to(device),captions.to(device)
-
-                # Zero the gradients.
-                optimizer.zero_grad()
-
-                # Feed forward
-                outputs = model(image, captions)
-                
-                # Calculate the batch loss.
-                loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-
-                
-                # Backward pass.
-                loss.backward()
-
-                # Update the parameters in the optimizer.
-                optimizer.step()
-                
-                if (idx+1)%print_every == 0:
-                    print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
-                    
-                    
-                    #generate the caption
-                    model.eval()
-                    with torch.no_grad():
-                        dataiter = iter(val_loader)
-                        img,_ = next(dataiter)
-                        features = model.encoder(img[0:1].to(device))
-                        print(f"features shape - {features.shape}")
-                        caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-                        caption = ' '.join(caps)
-                        print(caption)
-                        show_image(img[0],title=caption)
-                        
-                    model.train()
+def val_visualize_captions_test(model, test_loader, device,  vocab, df_vocab, epochs):
+    
+    #generate the caption
+    model.eval()
+    with torch.no_grad():
+        dataiter = iter(test_loader)
+        img,captions = next(dataiter)
+        caption = captions[0:1][0].tolist()
+        s = [df_vocab[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
+        print("Original:", ' '.join(s))
+        features = model.encoder(img[0:1].to(device))
+        print(f"features shape - {features.shape}")
+        preds_caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+        pred_caption = ' '.join(preds_caps)
+        print(pred_caption)
+        show_image(img[0],title=pred_caption)
+    
+        
 
 '''
 def test(model, test_loader, device="cuda", save:bool= True):
