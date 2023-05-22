@@ -94,7 +94,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
     return average_loss
     '''
 
-def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
+def val_visualize_captions(model, train_loader, test_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
     print_every = 250
     model.train()
     for epoch in range(1, epochs+1):
@@ -119,15 +119,18 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                 
                 if (idx+1)%print_every == 0:
                     print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
-                    
-                    
+                
                     #generate the caption
                     model.eval()
                     with torch.no_grad():
-                        dataiter = iter(val_loader)
+                        dataiter = iter(test_loader)
                         img,_ = next(dataiter)
+                        df_filtered = val_df.loc[val_df['image'] == img, 'caption']
+                        true_caps = [caption for caption in df_filtered]
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
+                        print(f"True captions of the image:\n {true_caps}")
+                        print("Predicted caption:")
                         caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
                         caption = ' '.join(caps)
                         print(caption)
