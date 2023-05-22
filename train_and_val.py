@@ -98,7 +98,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
     print_every = 1000
     model.train()
     for epoch in range(1, epochs+1):
-        for idx, (image, captions,_) in enumerate(iter(train_loader)):
+        for idx, (image, captions) in enumerate(iter(train_loader)):
                 image,captions = image.to(device),captions.to(device)
                 
                 # Zero the gradients.
@@ -124,7 +124,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     model.eval()
                     with torch.no_grad():
                         dataiter = iter(val_loader)
-                        img,captions,imgs_dir = next(dataiter)
+                        img,captions = next(dataiter)
                         caption = captions[0:1][0].tolist()
                         s = [vocab_val_df[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
                         print("Original:", ' '.join(s))

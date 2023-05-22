@@ -87,7 +87,7 @@ class ImageCaptionDataset(Dataset):
         one_hot_caption.extend(self.vocab.to_one_hot(caption))
         one_hot_caption.append(self.vocab.stoi['<EOS>'])
         padded_vector = self.padded_caption(one_hot_caption)
-        return img, torch.tensor(padded_vector), img_dir
+        return img, torch.tensor(padded_vector)
     
     def get_max_caption_length(self):
         max_length = 0
