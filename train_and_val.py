@@ -100,7 +100,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
     for epoch in range(1, epochs+1):
         for idx, (image, captions,_) in enumerate(iter(train_loader)):
                 image,captions = image.to(device),captions.to(device)
-
+                
                 # Zero the gradients.
                 optimizer.zero_grad()
 
@@ -124,9 +124,9 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                     model.eval()
                     with torch.no_grad():
                         dataiter = iter(val_loader)
-                        img,_,img_dir = next(dataiter)
-                        df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
-                        true_caps = [caption for caption in df_filtered]
+                        img,_ = next(dataiter)
+                        #df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
+                        #true_caps = [caption for caption in df_filtered]
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
                         print(f"True captions of the image:\n {true_caps}")
