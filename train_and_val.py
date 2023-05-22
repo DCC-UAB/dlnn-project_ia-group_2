@@ -125,8 +125,8 @@ def val_visualize_captions(model, train_loader, test_loader, criterion, optimize
                     with torch.no_grad():
                         dataiter = iter(test_loader)
                         img,_,img_dir = next(dataiter)
-                        print(img)
-                        df_filtered = val_df.loc[val_df['image'] == img_dir, 'caption']
+                        print(img_dir)
+                        df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
                         true_caps = [caption for caption in df_filtered]
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
