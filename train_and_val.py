@@ -2,7 +2,6 @@ import torch
 from get_loader_v2_train_val_test import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import nltk
 from utils.utils import best_bleu_cap
 
 
@@ -13,7 +12,7 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
     total_samples = 0
 
     with torch.no_grad():
-        for images, captions in loader:
+        for images, captions, _ in loader:
             images = images.to(device)
             captions = captions.to(device)
             batch_size = images.size(0)
@@ -37,7 +36,7 @@ def train(epoch, criterion, model, optimizer, loader, device):
 
     model.train()
 
-    for batch_idx, (images, captions) in enumerate(loader):
+    for batch_idx, (images, captions, _) in enumerate(loader):
         images = images.to(device)
         captions = captions.to(device)
         batch_size = images.size(0)
@@ -66,7 +65,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
     print_every = 250
     model.train()
     for epoch in range(1, epochs+1):
-        for idx, (image, captions) in enumerate(iter(train_loader)):
+        for idx, (image, captions,_) in enumerate(iter(train_loader)):
                 image,captions = image.to(device),captions.to(device)
                 
                 # Zero the gradients.

@@ -28,7 +28,7 @@ def val_visualize_captions_test(model, test_loader, device,  vocab, df_vocab, ep
     model.eval()
     with torch.no_grad():
         dataiter = iter(test_loader)
-        img,captions = next(dataiter)
+        img,captions,_ = next(dataiter)
         caption = captions[0:1][0].tolist()
         s = [df_vocab[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
         print("Original:", ' '.join(s))
