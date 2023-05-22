@@ -129,7 +129,7 @@ def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer
                         #true_caps = [caption for caption in df_filtered]
                         features = model.encoder(img[0:1].to(device))
                         print(f"features shape - {features.shape}")
-                        print(f"True captions of the image:\n {true_caps}")
+                        #print(f"True captions of the image:\n {true_caps}")
                         print("Predicted caption:")
                         caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
                         caption = ' '.join(caps)
