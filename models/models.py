@@ -74,7 +74,7 @@ class DecoderRNN(nn.Module):
             inputs = self.embedding(predicted_word_idx.unsqueeze(0))
         
         #covert the vocab idx to words and return sentence
-        return [vocab[idx] for idx in captions if idx != idx != 1 and idx != 2] # Index 1 and index 2 are sos and eos tokens, we erase them. 
+        return [vocab[idx] for idx in captions if idx != 1 and idx != 2] # Index 1 and index 2 are sos and eos tokens, we erase them. 
 
 class EncoderDecoder(nn.Module):
     def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.3):
