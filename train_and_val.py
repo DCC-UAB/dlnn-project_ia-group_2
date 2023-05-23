@@ -23,7 +23,7 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
             total_loss += loss.item() * batch_size
 
     average_loss = total_loss / total_samples
-    print("Validation set: Average loss: {:.5f}".format(average_loss))
+    print("Validation set: AVERAGE VALIDATION LOSS: {:.5f}".format(average_loss))
     return average_loss
 
 # Here we only print and calculate the train loss
