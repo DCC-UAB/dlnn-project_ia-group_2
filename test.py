@@ -1,6 +1,7 @@
 import wandb
 import torch
 from get_loader_v2_train_val_test import show_image
+from utils.utils import best_bleu_cap
 
 def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
 
@@ -22,22 +23,26 @@ def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
     average_loss = total_loss / total_samples
     return average_loss
 
-def val_visualize_captions_test(model, test_loader, device,  vocab, df_vocab, epochs):
-    
+# ONLY FOR ONE BATCH
+def test_caps( model, loader, df, vocab, device):
+    print_every = 50
     #generate the caption
     model.eval()
     with torch.no_grad():
-        dataiter = iter(test_loader)
-        img,captions,_ = next(dataiter)
-        caption = captions[0:1][0].tolist()
-        s = [df_vocab[idx] for idx in caption if idx != 0] # if idx != 0 and idx != 1 and idx != 2 (to erase eos and sos if we want idx 1 and 2)
-        print("Original:", ' '.join(s))
-        features = model.encoder(img[0:1].to(device))
-        print(f"features shape - {features.shape}")
-        preds_caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-        pred_caption = ' '.join(preds_caps)
-        print(pred_caption)
-        show_image(img[0],title=pred_caption)
+        for idx, (img, captions,img_dir) in enumerate(iter(loader)):
+            if (idx+1)%print_every == 0:
+                df_filtered = df.loc[df['image'] == img_dir[0], 'caption']
+                original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
+                features = model.encoder(img[0:1].to(device))
+                print(f"features shape - {features.shape}")
+                caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+                pred_caption = ' '.join(caps)
+                pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
+                original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
+                print("Best original caption (1 out of 5):", original_caption)
+                print("Predicted caption:", pred_caption)
+                print("BLEU score:", bleu_score)
+                show_image(img[0],title=pred_caption)
     
         
 
