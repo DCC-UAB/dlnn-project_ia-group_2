@@ -1,5 +1,5 @@
 import torch
-from get_loader_v2_train_val_test import show_image
+from get_loader import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from utils.utils import best_bleu_cap
