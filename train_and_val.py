@@ -78,11 +78,11 @@ def val_caps( model, loader, df, vocab, device):
                 original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
                 print("Best original caption (1 out of 5):", original_caption)
                 print("Predicted caption:", pred_caption)
-                print("Puntaje BLEU:", bleu_score)
+                print("BLEU score:", bleu_score)
                 show_image(img[0],title=pred_caption)
         
 
-def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
+def train_val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
     print_every = 250
     model.train()
     for epoch in range(1, epochs+1):
