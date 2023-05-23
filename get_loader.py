@@ -133,7 +133,8 @@ def get_pad_index(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     pad_idx = dataset.vocab.stoi['<PAD>']
     return pad_idx
- 
+
+'''
 def main():
     img_dir = "data/Images"
     captions_file = "data/captions.txt"
@@ -169,7 +170,7 @@ def main():
     test_dataloader = get_loader(data_dir=img_dir, dataframe=test_df, transform=transform)
     
     
-''' 
+
     # Print the shapes of train, validation, and test batches
     for idx, (imgs, captions) in enumerate(train_dataloader):
         print("Train batch - Images shape:", imgs.shape)
@@ -195,7 +196,8 @@ def main():
     print(vocab_val_df)
     print(vocab_test_df)
     
-'''
+
 if __name__ == "__main__":
     main()
     
+'''
