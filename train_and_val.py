@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from utils.utils import best_bleu_cap
 
-
+# Here we only print and calculate the validation loss
 def validate(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
 
     model.eval()
@@ -26,10 +26,8 @@ def validate(criterion, model, loader, device): # vocab tendria q ser train_voca
     print("Validation set: Average loss: {:.5f}".format(average_loss))
     return average_loss
 
-
+# Here we only print and calculate the train loss
 def train(epoch, criterion, model, optimizer, loader, device):
-    
-    
     total_samples = 0
     total_loss = 0.0
     print_every = 250
@@ -59,9 +57,58 @@ def train(epoch, criterion, model, optimizer, loader, device):
     print("Train Epoch: {} Average Loss: {:.5f}".format(epoch, average_loss))
 
     return average_loss
-
-# ONLY FOR ONE BATCH
-def val_caps( model, loader, df, vocab, device):
+        
+# In this function we train the model and visualize the 
+# generated caption for image in the val set every 400 in the batch 
+# per epoch we see the train loss 2 times (every 400 and the batch is of size 800))
+# Also per epoch we visualize the avergae training loss and val loss in the batch and the plot to compare them
+# Here we have merged visualization of caps with training to use ONLY 1 function to train
+def train_and_visualize_caps(epoch, train_dataloader, val_dataloader, model, optimizer, criterion, vocab, val_df, device):
+    print_every = 400
+    total_loss = 0
+    total_samples = 0
+    model.train()
+    for batch_idx, (image, captions,_) in enumerate(iter(train_dataloader)):
+        images,captions = image.to(device),captions.to(device)
+        batch_size = images.size(0)
+        total_samples += batch_size
+        optimizer.zero_grad()
+        outputs = model(images, captions)
+        
+        # Calculate the batch loss.
+        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item() * batch_size
+        if (batch_idx + 1) % print_every == 0:
+            print("Train Epoch: {} Batch [{}/{}]\tLoss: {:.5f}".format(epoch,
+            batch_idx + 1, len(train_dataloader), loss.item()
+        ))
+            #generate the caption
+            model.eval()
+            with torch.no_grad():
+                dataiter = iter(val_dataloader)
+                img,captions_val,img_dir = next(dataiter)
+                df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
+                original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
+                features = model.encoder(img[0:1].to(device))
+                caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+                pred_caption = ' '.join(caps)
+                pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
+                original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
+                print("Best original caption (1 out of 5):", original_caption)
+                print("Predicted caption:", pred_caption)
+                print("BLEU score :", bleu_score)
+                show_image(img[0],title=pred_caption)
+            model.train()
+            
+    average_loss = total_loss / total_samples
+    print("Train Epoch: {} - Training set:  AVERAGE TRAINING LOSS: {:.5f}".format(epoch, average_loss))
+    return average_loss
+                    
+# In this function we visualize the generated captions 
+# for the val or test set once the model is trained to see its performance
+def evaluate_caps( model, loader, df, vocab, device):
     print_every = 50
     #generate the caption
     model.eval()
@@ -80,52 +127,6 @@ def val_caps( model, loader, df, vocab, device):
                 print("Predicted caption:", pred_caption)
                 print("BLEU score:", bleu_score)
                 show_image(img[0],title=pred_caption)
-        
-
-def train_val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs, val_df):
-    print_every = 250
-    model.train()
-    for epoch in range(1, epochs+1):
-        for idx, (image, captions,_) in enumerate(iter(train_loader)):
-                image,captions = image.to(device),captions.to(device)
-                
-                # Zero the gradients.
-                optimizer.zero_grad()
-
-                # Feed forward
-                outputs = model(image, captions)
-                
-                # Calculate the batch loss.
-                loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-
-                # Backward pass.
-                loss.backward()
-
-                # Update the parameters in the optimizer.
-                optimizer.step()
-                if (idx+1)%print_every == 0:
-                    print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
-                
-                    #generate the caption
-                    model.eval()
-                    with torch.no_grad():
-                        dataiter = iter(val_loader)
-                        img,captions,img_dir = next(dataiter)
-                        df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
-                        original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
-                        features = model.encoder(img[0:1].to(device))
-                        print(f"features shape - {features.shape}")
-                        caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
-                        pred_caption = ' '.join(caps)
-                        pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
-                        original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
-                        print("Best original caption (1 out of 5):", original_caption)
-                        print("Predicted caption:", pred_caption)
-                        print("Puntaje BLEU:", bleu_score)
-                        show_image(img[0],title=pred_caption)
-                    model.train()
-                    
-
 
 '''
 
