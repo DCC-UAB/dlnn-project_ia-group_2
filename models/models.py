@@ -34,7 +34,7 @@ class DecoderRNN(nn.Module):
         self.fcn = nn.Linear(hidden_size,vocab_size)
         self.drop = nn.Dropout(drop_prob)
     
-    def forward(self,features, captions):
+    def forward(self, features, captions):
         # vectorize the caption
         # caption shape - torch.Size([4, 14])
         embeds = self.embedding(captions[:,:-1]) # shape of embeds - torch.Size([4, 14, 400])
@@ -51,7 +51,6 @@ class DecoderRNN(nn.Module):
     # Given the image features generate the captions
     
         batch_size = inputs.size(0)
-        
         captions = []
         
         for i in range(max_len):
