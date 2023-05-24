@@ -1,7 +1,7 @@
 import wandb
 import torch
 from get_loader import show_image
-from utils.utils import best_bleu_cap
+from utils.utils_2 import best_bleu_cap
 
 def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
 
