@@ -46,11 +46,13 @@ class DecoderRNN(nn.Module):
         # shape of x after lstm - torch.Size([4, 15, 512])
         x = self.fcn(x)
 
-        if self.training and teacher_forcing_prob > 0.0: # WHen in training mode will enter this if .
-            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob # Probability to use teacher forcing or not.
+        if self.training and teacher_forcing_prob > 0.0:
+            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
             if use_teacher_forcing:
-                x = x[:, :-1, :]  # Use ground truth captions from the second to the last time step
-
+                ground_truth_embeds = self.embedding(captions[:, :-1])  # Use ground truth captions up to the second to last time step
+                x = torch.cat((features.unsqueeze(1), ground_truth_embeds), dim=1)
+                x, _ = self.lstm(x)
+                x = self.fcn(x)
         return x
 
 
