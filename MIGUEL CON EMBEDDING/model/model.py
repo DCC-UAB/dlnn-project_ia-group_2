@@ -45,7 +45,7 @@ class DecoderRNN(nn.Module):
     def forward(self,features, captions):
         # vectorize the caption
         # caption shape - torch.Size([4, 14])
-        embeds = self.embedding(captions[:,:-1]) # shape of embeds - torch.Size([4, 14, 400])
+        embeds = self.embedding(captions) # shape of embeds - torch.Size([4, 14, 400])
         # features shape - torch.Size([4, 400])
         x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
         # shape of x - torch.Size([4, 15, 400])
@@ -65,18 +65,15 @@ class DecoderRNN(nn.Module):
         return emb_layer, num_embeddings, embedding_dim
 
     def generate_caption(self,inputs,hidden=None,max_len=25,vocab=None):
-    # Given the image features generate the captions
     
+        # Given the image features generate the caption
         batch_size = inputs.size(0)
-        
         captions = []
-        
         for i in range(max_len):
             output,hidden = self.lstm(inputs,hidden)
             output = self.fcn(output)
             output = output.view(batch_size,-1)
         
-            
             #select the word with most val
             predicted_word_idx = output.argmax(dim=1)
             
@@ -87,10 +84,10 @@ class DecoderRNN(nn.Module):
             if vocab[predicted_word_idx.item()] == "<EOS>":
                 break
             
-            #send generated word as the next caption
-            inputs = self.embedding(predicted_word_idx.unsqueeze(0))
+            # Embed the predicted word to the next time step
+            inputs = self.embedding(predicted_word_idx.unsqueeze(1))
         
-        #covert the vocab idx to words and return sentence
+         #convert the vocab idx to words and return generated sentence
         return [vocab[idx] for idx in captions]  
 
 class EncoderDecoder(nn.Module):
