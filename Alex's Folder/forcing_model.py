@@ -35,7 +35,7 @@ class EncoderCNN(nn.Module):
             self.linear = nn.Linear(hidden_size, vocab_size)
             self.teacher_forcing_prob = 0.5
 
-        def forward(self, features, captions=None):
+        def forward(self, features, captions=None, teacher_forcing_prob=0.0):
             max_len = captions.size(1) if captions is not None else 20
 
             embeddings = self.embed(captions) if captions is not None else None
