@@ -39,7 +39,7 @@ def weights_matrix(vocab, emb_dim, glove_embedding):
     Function returns a matrix with weight values that reresent the pretrained embedding.
     """
     matrix_len = len(vocab)
-    weights_matrix = np.zeros((matrix_len, 50))
+    weights_matrix = np.zeros((matrix_len, 100))
     words_found = 0
 
     for i, word in enumerate(vocab):
