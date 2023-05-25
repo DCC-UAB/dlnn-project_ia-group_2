@@ -26,40 +26,41 @@ class EncoderCNN(nn.Module):
 
 
 
-    class DecoderRNN(nn.Module):
-        def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
-            super(DecoderRNN, self).__init__()
+class DecoderRNN(nn.Module):
+    def __init__(self, embed_size, hidden_size, vocab_size, num_layers, teacher_forcing_prob=0.5):
+        super(DecoderRNN, self).__init__()
 
-            self.embed = nn.Embedding(vocab_size, embed_size)
-            self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
-            self.linear = nn.Linear(hidden_size, vocab_size)
-            self.teacher_forcing_prob = 0.5
+        self.embed = nn.Embedding(vocab_size, embed_size)
+        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
+        self.linear = nn.Linear(hidden_size, vocab_size)
+        self.teacher_forcing_prob = teacher_forcing_prob
 
-        def forward(self, features, captions=None, teacher_forcing_prob=0.0):
-            max_len = captions.size(1) if captions is not None else 20
+    def forward(self, features, captions=None):
+        max_len = captions.size(1) if captions is not None else 20
 
-            embeddings = self.embed(captions) if captions is not None else None
-            inputs = features.unsqueeze(1)
+        embeddings = self.embed(captions) if captions is not None else None
+        inputs = features.unsqueeze(1)
 
-            sampled_ids = []
-            for i in range(max_len):
-                hiddens, _ = self.lstm(inputs)
-                outputs = self.linear(hiddens.squeeze(1))
+        sampled_ids = []
+        for i in range(max_len):
+            hiddens, _ = self.lstm(inputs)
+            outputs = self.linear(hiddens.squeeze(1))
 
-                _, predicted = outputs.max(1)
-                sampled_ids.append(predicted)
+            _, predicted = outputs.max(1)
+            sampled_ids.append(predicted)
 
-                if captions is not None and i < max_len - 1:
-                    # Randomly choose whether to use teacher forcing or predicted output
-                    teacher_force = torch.rand(1) < self.teacher_forcing_prob
-                    if teacher_force:
-                        inputs = embeddings[:, i+1, :]
-                    else:
-                        inputs = self.embed(predicted)
-                    inputs = inputs.unsqueeze(1)
+            if captions is not None and i < max_len - 1:
+                # Randomly choose whether to use teacher forcing or predicted output
+                teacher_force = torch.rand(1) < self.teacher_forcing_prob
+                if teacher_force:
+                    inputs = embeddings[:, i+1, :]
+                else:
+                    inputs = self.embed(predicted)
+                inputs = inputs.unsqueeze(1)
 
-            sampled_ids = torch.stack(sampled_ids, 1)
-            return sampled_ids
+        sampled_ids = torch.stack(sampled_ids, 1)
+        return sampled_ids
+
 
 
 
