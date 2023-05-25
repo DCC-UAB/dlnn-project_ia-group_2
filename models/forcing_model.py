@@ -102,15 +102,67 @@ def generate_caption(self, inputs, hidden=None, max_len=25, vocab=None, beam_wid
   
 
 class EncoderDecoder(nn.Module):
-    def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.3):
-        super(EncoderDecoder,self).__init__()
+    def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3):
+        super(EncoderDecoder, self).__init__()
         self.encoder = EncoderCNN(embed_size)
-        self.decoder = DecoderRNN(embed_size,hidden_size,vocab_size,num_layers,drop_prob)
-    
-    def forward(self, images, captions):
+        self.decoder = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers, drop_prob)
+
+    def forward(self, images, captions, teacher_forcing_prob=0.5):
         features = self.encoder(images)
-        outputs = self.decoder(features, captions)
+        outputs = self.decoder(features, captions, teacher_forcing_prob)
         return outputs
+
+    
+
+def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teacher_forcing_prob=0.5):
+    print_every = 500
+    losses = []
+    
+    model.train()
+        
+    for batch_idx, (images, captions) in enumerate(iter(loader)):
+        # Zero gradients
+        optimizer.zero_grad()
+
+        images, captions = images.to(device), captions.to(device)
+        
+        if model.training and teacher_forcing_prob > 0.0:
+            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
+            if use_teacher_forcing:
+                # Use ground truth captions for teacher forcing
+                outputs = model(images, captions, teacher_forcing_prob=1.0)
+            else:
+                # Use model's predictions for teacher forcing
+                outputs = model(images, captions, teacher_forcing_prob=0.0)
+        else:
+            # Disable teacher forcing
+            outputs = model(images, captions, teacher_forcing_prob=0.0)
+        
+        # Calculate the batch loss
+        loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+        
+        # Backward pass.
+        loss.backward()
+        
+        # Update the parameters in the optimizer.
+        optimizer.step()     
+        
+        losses.append(loss.item())
+          
+        if (batch_idx) % print_every == 0:
+            print("Train Epoch: {}; Loss: {:.5f}".format(epoch + 1, loss.item()))
+
+    return losses
+
+
+
+
+
+
+
+
+
+
 # resenet features shape - torch.Size([4, 2048, 1, 1])
 # resenet features viewed shape - torch.Size([4, 2048])
 # resenet features embed shape - torch.Size([4, 400])
