@@ -26,34 +26,41 @@ class EncoderCNN(nn.Module):
 
 
 
-class DecoderRNN(nn.Module):
-    def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.3):
-        super(DecoderRNN,self).__init__()
-        self.embedding = nn.Embedding(vocab_size,embed_size)
-        self.lstm = nn.LSTM(embed_size,hidden_size,num_layers=num_layers,batch_first=True)
-        self.batch_norm = nn.BatchNorm1d(hidden_size)  # Add batch normalization layer
-        self.fcn = nn.Linear(hidden_size,vocab_size)
-        self.drop = nn.Dropout(drop_prob)
-    
-    def forward(self, features, captions, teacher_forcing_prob=0.5):
-        # vectorize the caption
-        # caption shape - torch.Size([4, 14])
-        embeds = self.embedding(captions[:,:-1]) # shape of embeds - torch.Size([4, 14, 400])
-        # features shape - torch.Size([4, 400])
-        x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
-        # shape of x - torch.Size([4, 15, 400])
-        x,_ = self.lstm(x)
-        # shape of x after lstm - torch.Size([4, 15, 512])
-        x = self.fcn(x)
+    class DecoderRNN(nn.Module):
+        def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
+            super(DecoderRNN, self).__init__()
 
-        if self.training and teacher_forcing_prob > 0.0:
-            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
-            if use_teacher_forcing:
-                ground_truth_embeds = self.embedding(captions[:, :-1])  # Use ground truth captions up to the second to last time step
-                x = torch.cat((features.unsqueeze(1), ground_truth_embeds), dim=1)
-                x, _ = self.lstm(x)
-                x = self.fcn(x)
-        return x
+            self.embed = nn.Embedding(vocab_size, embed_size)
+            self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
+            self.linear = nn.Linear(hidden_size, vocab_size)
+            self.teacher_forcing_prob = 0.5
+
+        def forward(self, features, captions=None):
+            max_len = captions.size(1) if captions is not None else 20
+
+            embeddings = self.embed(captions) if captions is not None else None
+            inputs = features.unsqueeze(1)
+
+            sampled_ids = []
+            for i in range(max_len):
+                hiddens, _ = self.lstm(inputs)
+                outputs = self.linear(hiddens.squeeze(1))
+
+                _, predicted = outputs.max(1)
+                sampled_ids.append(predicted)
+
+                if captions is not None and i < max_len - 1:
+                    # Randomly choose whether to use teacher forcing or predicted output
+                    teacher_force = torch.rand(1) < self.teacher_forcing_prob
+                    if teacher_force:
+                        inputs = embeddings[:, i+1, :]
+                    else:
+                        inputs = self.embed(predicted)
+                    inputs = inputs.unsqueeze(1)
+
+            sampled_ids = torch.stack(sampled_ids, 1)
+            return sampled_ids
+
 
 
  # bajar la temperature para resultados menos random, subirla para mas randomness.
@@ -155,7 +162,7 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teache
     return losses
 
 
-
+torch.cuda.is_available()
 
 
 
