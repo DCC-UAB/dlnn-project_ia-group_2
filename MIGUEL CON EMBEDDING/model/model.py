@@ -43,15 +43,14 @@ class DecoderRNN(nn.Module):
             self.drop = nn.Dropout(drop_prob)
     
     def forward(self,features, captions):
-        # vectorize the caption
-        # caption shape - torch.Size([4, 14])
-        embeds = self.embedding(captions) # shape of embeds - torch.Size([4, 14, 400])
-        # features shape - torch.Size([4, 400])
-        x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
-        # shape of x - torch.Size([4, 15, 400])
-        x,_ = self.lstm(x)
+
+        if self.training:
+            embeds = self.embedding(captions[:, :-1])
+        else:
+            embeds = self.embedding(torch.zeros(captions.size(0), 1).long().to(captions.device))
         
-        # shape of x after lstm - torch.Size([4, 15, 512])
+        x = torch.cat((features.unsqueeze(1), embeds), dim=1)
+        x, _ = self.lstm(x)
         x = self.fcn(x)
         return x
 
