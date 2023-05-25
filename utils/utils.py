@@ -3,7 +3,7 @@ import torch
 import torch.nn 
 import torchvision
 import torchvision.transforms as transforms
-from models.models import *
+from models.forcing_model import *
 import nltk
 
 def best_bleu_cap(list_original_caps, pred_cap):
