@@ -70,7 +70,7 @@ def train_and_visualize_caps(epoch, train_dataloader, val_dataloader, model, opt
     total_samples = 0
     model.train()
     for batch_idx, (image, captions,_) in enumerate(iter(train_dataloader)):
-        images, caprions = image.to(device), captions.to(device)
+        images, captions = image.to(device), captions.to(device)
         batch_size = images.size(0)
         total_samples += batch_size
         optimizer.zero_grad()

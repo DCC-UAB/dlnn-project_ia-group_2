@@ -43,10 +43,9 @@ class DecoderRNN(nn.Module):
     
     def forward(self, features, captions):
 
-        if self.training:
-            embeds = self.embedding(captions[:, :-1])
-        else:
-            embeds = self.embedding(torch.zeros(captions.size(0), 1).long().to(captions.device))
+
+        embeds = self.embedding(captions[:, :-1])
+       
         
         x = torch.cat((features.unsqueeze(1), embeds), dim=1)
         x, _ = self.lstm(x)
