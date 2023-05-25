@@ -32,17 +32,16 @@ class DecoderRNN(nn.Module):
         if weight_matrix is not None:
             self.embedding, vocab_size, embed_size = self.create_embedding_layer(weight_matrix, pretrained)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
-            self.batch_norm = nn.BatchNorm1d(hidden_size)  
             self.fcn = nn.Linear(hidden_size, vocab_size)
             self.drop = nn.Dropout(drop_prob)
         else:
             self.embedding = nn.Embedding(vocab_size, embed_size)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
-            self.batch_norm = nn.BatchNorm1d(hidden_size)  # Add batch normalization layer
+
             self.fcn = nn.Linear(hidden_size,vocab_size)
             self.drop = nn.Dropout(drop_prob)
     
-    def forward(self,features, captions):
+    def forward(self, features, captions):
 
         if self.training:
             embeds = self.embedding(captions[:, :-1])

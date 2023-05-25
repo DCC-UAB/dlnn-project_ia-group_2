@@ -120,6 +120,11 @@ def get_vocab(data_dir, dataframe, transform=None):
     vocab = dataset.vocab
     return vocab.itos
 
+def get_vocab_stoi(data_dir, dataframe, transform=None):
+    dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
+    vocab = dataset.vocab
+    return vocab.stoi
+
 def show_image(tensor, title=None):
     """Imshow for Tensor"""
     tensor = tensor.cpu().numpy().transpose((1,2,0))
