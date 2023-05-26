@@ -51,49 +51,31 @@ class DecoderRNN(nn.Module):
 
         return x
 
-# bajar la temperature para resultados menos random, subirla para mas randomness.
-def generate_caption(self, inputs, hidden=None, max_len=25, vocab=None, beam_width=5, temperature=1.0):
-    batch_size = inputs.size(0)
+    def generate_caption(self,inputs,hidden=None,max_len=25,vocab=None):
 
-    captions = []
-    partial_captions = [{'sequence': [vocab['<START>']], 'hidden': hidden, 'score': 0.0}]
-
-    for _ in range(max_len):
-        candidates = []
-        for partial_caption in partial_captions:
-            sequence = partial_caption['sequence']
-            hidden = partial_caption['hidden']
-            inputs = self.embedding(torch.tensor(sequence[-1]).unsqueeze(0))
-
-            output, hidden = self.lstm(inputs, hidden)
+        # Given the image features generate the caption
+        batch_size = inputs.size(0)
+        captions = []
+        for i in range(max_len):
+            output,hidden = self.lstm(inputs,hidden)
             output = self.fcn(output)
-            output = output.view(batch_size, -1)
-
-            probabilities = F.softmax(output / temperature, dim=1)
-            top_probs, top_words = torch.topk(probabilities, beam_width)
-
-            for i in range(beam_width):
-                word_idx = top_words[0, i].item()
-                word_prob = top_probs[0, i].item()
-                score = partial_caption['score'] + torch.log(word_prob)
-
-                if vocab[word_idx] == '<EOS>':
-                    captions.append({'sequence': sequence + [word_idx], 'score': score})
-                else:
-                    candidates.append({'sequence': sequence + [word_idx], 'hidden': hidden, 'score': score})
-
-        candidates = sorted(candidates, key=lambda x: x['score'], reverse=True)[:beam_width]
-        partial_captions = candidates
-
-        if len(partial_captions) == 0:
-            break
-
-    captions.extend(partial_captions)
-    best_caption = max(captions, key=lambda x: x['score'])
-    generated_caption = [vocab[idx] for idx in best_caption['sequence']]
-    generated_caption = generated_caption[1:-1]  # Remove <START> and <EOS> tokens
-
-    return generated_caption
+            output = output.view(batch_size,-1)
+        
+            #select the word with most val
+            predicted_word_idx = output.argmax(dim=1)
+            
+            #save the generated word
+            captions.append(predicted_word_idx.item())
+            
+            #end if <EOS detected>
+            if vocab[predicted_word_idx.item()] == "<EOS>":
+                break
+            
+            # Embed the predicted word to the next time step
+            inputs = self.embedding(predicted_word_idx.unsqueeze(1))
+        
+            #convert the vocab idx to words and return generated sentence
+        return [vocab[idx] for idx in captions]  
   
 class EncoderDecoder(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3):
