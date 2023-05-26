@@ -24,44 +24,45 @@ def validate(criterion, model, loader, vocab_size, vocab, device, teacher_forcin
     return val_loss
 
 def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teacher_forcing_prob=0.5):
-        print_every = 500
-        losses = []
+    print_every = 500
+    losses = []
+    
+    model.train()
         
-        model.train()
-            
-        for batch_idx, (images, captions) in enumerate(iter(loader)):
-            # Zero gradients
-            optimizer.zero_grad()
+    for batch_idx, (images, captions) in enumerate(iter(loader)):
+        # Zero gradients
+        optimizer.zero_grad()
 
-            images, captions = images.to(device), captions.to(device)
-            
-            if model.training and teacher_forcing_prob > 0.0:
-                use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
-                if use_teacher_forcing:
-                    # Use ground truth captions for teacher forcing
-                    outputs = model(images, captions, teacher_forcing_prob=1.0)
-                else:
-                    # Use model's predictions for teacher forcing
-                    outputs = model(images, captions, teacher_forcing_prob=0.0)
+        images, captions = images.to(device), captions.to(device)
+        
+        if model.training and teacher_forcing_prob > 0.0:
+            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
+            if use_teacher_forcing:
+                # Use ground truth captions for teacher forcing
+                outputs = model(images, captions, teacher_forcing_prob=1.0)
             else:
-                # Disable teacher forcing
-                outputs = model(images, captions, teacher_forcing_prob=0.0)
-            
-            # Calculate the batch loss
-            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-            
-            # Backward pass.
-            loss.backward()
-            
-            # Update the parameters in the optimizer.
-            optimizer.step()     
-            
-            losses.append(loss.item())
-            
-            if (batch_idx) % print_every == 0:
-                print("Train Epoch: {}; Loss: {:.5f}".format(epoch + 1, loss.item()))
+                # Use model's predictions for teacher forcing
+                outputs = model(images, captions)
+        else:
+            # Disable teacher forcing
+            outputs = model(images, captions)
+        
+        # Calculate the batch loss
+        loss = criterion(outputs.reshape(-1, vocab_size), captions.reshape(-1))
+        
+        # Backward pass.
+        loss.backward()
+        
+        # Update the parameters in the optimizer.
+        optimizer.step()     
+        
+        losses.append(loss.item())
+        
+        if (batch_idx) % print_every == 0:
+            print("Train Epoch: {}; Loss: {:.5f}".format(epoch + 1, loss.item()))
 
-        return losses
+    return losses
+
 
 def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
     print_every = 400
