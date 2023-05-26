@@ -48,8 +48,8 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teache
             outputs = model(images, captions)
         
         # Reshape the outputs to match the target size
-        outputs = outputs.view(-1, vocab_size)
-        captions = captions.view(-1)
+        outputs = outputs.reshape(-1, vocab_size)
+        captions = captions.reshape(-1)
         
         # Calculate the batch loss
         loss = criterion(outputs, captions)
