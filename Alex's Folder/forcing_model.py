@@ -101,16 +101,16 @@ class DecoderRNN(nn.Module):
         return generated_caption
   
 
-    class EncoderDecoder(nn.Module):
-        def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3):
-            super(EncoderDecoder, self).__init__()
-            self.encoder = EncoderCNN(embed_size)
-            self.decoder = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers, drop_prob)
+class EncoderDecoder(nn.Module):
+    def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3):
+        super(EncoderDecoder, self).__init__()
+        self.encoder = EncoderCNN(embed_size)
+        self.decoder = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers, drop_prob)
 
-        def forward(self, images, captions, teacher_forcing_prob=0.5):
-            features = self.encoder(images)
-            outputs = self.decoder(features, captions, teacher_forcing_prob)
-            return outputs
+    def forward(self, images, captions, teacher_forcing_prob=0.5):
+        features = self.encoder(images)
+        outputs = self.decoder(features, captions, teacher_forcing_prob)
+        return outputs
 
     
 
