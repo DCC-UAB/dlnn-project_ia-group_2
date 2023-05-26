@@ -5,7 +5,7 @@ from loaders import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-def validate(criterion, model, loader, vocab_size, vocab, device, teacher_forcing_prob=0.5):
+def validate(criterion, model, loader, vocab_size, vocab, device):
     losses = []
     model.eval()
     
@@ -13,7 +13,7 @@ def validate(criterion, model, loader, vocab_size, vocab, device, teacher_forcin
         for batch_idx, (image, captions) in enumerate(iter(loader)):
             image, captions = image.to(device), captions.to(device)
             
-            outputs = model(image, captions, teacher_forcing_prob)
+            outputs = model(image, captions)
             loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
             
             losses.append(loss.item())
@@ -47,8 +47,12 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teache
             # Disable teacher forcing
             outputs = model(images, captions)
         
+        # Reshape the outputs to match the target size
+        outputs = outputs.view(-1, vocab_size)
+        captions = captions.view(-1)
+        
         # Calculate the batch loss
-        loss = criterion(outputs.reshape(-1, vocab_size), captions.reshape(-1))
+        loss = criterion(outputs, captions)
         
         # Backward pass.
         loss.backward()
@@ -62,6 +66,8 @@ def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teache
             print("Train Epoch: {}; Loss: {:.5f}".format(epoch + 1, loss.item()))
 
     return losses
+
+
 
 
 def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
