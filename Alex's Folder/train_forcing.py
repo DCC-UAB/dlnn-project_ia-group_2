@@ -1,112 +1,135 @@
 import torch
-import nltk
-import random
-from loaders import show_image
+from get_loader import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from utils.utils_3 import best_bleu_cap
+import torchvision.transforms as transforms
 
-def validate(criterion, model, loader, vocab_size, vocab, device):
-    losses = []
+# Here we only print and calculate the validation loss
+def validate(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
+
     model.eval()
-    
+    total_loss = 0
+    total_samples = 0
+
     with torch.no_grad():
-        for batch_idx, (image, captions) in enumerate(iter(loader)):
-            image, captions = image.to(device), captions.to(device)
-            
-            outputs = model(image, captions)
-            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
-            
-            losses.append(loss.item())
+        for images, captions,_ in loader:
+            images = images.to(device)
+            captions = captions.to(device)
+            batch_size = images.size(0)
+            total_samples += batch_size
 
-    val_loss = torch.mean(torch.tensor(losses))
+            outputs = model(images, captions)
+            loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
+            total_loss += loss.item() * batch_size
 
-    print("Validation set: Average loss: {:.5f}".format(val_loss))
-    return val_loss
+    average_loss = total_loss / total_samples
+    print("Validation set: AVERAGE VALIDATION LOSS: {:.5f}".format(average_loss))
+    return average_loss
 
-def train(epoch, criterion, model, optimizer, loader, vocab_size, device, teacher_forcing_prob=0.5):
-    print_every = 500
-    losses = []
-    
+def train(epoch, criterion, model, optimizer, loader, device):
+    total_samples = 0
+    total_loss = 0.0
+    print_every = 250
+
     model.train()
-        
-    for batch_idx, (images, captions) in enumerate(iter(loader)):
-        # Zero gradients
+
+    for batch_idx, (images, captions, _) in enumerate(loader):
+        images = images.to(device)
+        captions = captions.to(device)
+        batch_size = images.size(0)
+        total_samples += batch_size
         optimizer.zero_grad()
 
-        images, captions = images.to(device), captions.to(device)
-        
-        if model.training and teacher_forcing_prob > 0.0:
-            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
-            if use_teacher_forcing:
-                # Use ground truth captions for teacher forcing
-                outputs = model(images, captions, teacher_forcing_prob=1.0)
-            else:
-                # Use model's predictions for teacher forcing
-                outputs = model(images, captions)
-        else:
-            # Disable teacher forcing
-            outputs = model(images, captions)
-        
-        # Reshape the outputs to match the target size
-        outputs = outputs.reshape(-1, vocab_size)
-        captions = captions.reshape(-1)
-        
-        # Calculate the batch loss
-        loss = criterion(outputs, captions)
-        
-        # Backward pass.
+        # Enable teacher forcing with a probability of 0.5
+        teacher_forcing_prob = 0.5
+        outputs = model(images, captions, teacher_forcing_prob)
+
+        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
         loss.backward()
-        
-        # Update the parameters in the optimizer.
-        optimizer.step()     
-        
-        losses.append(loss.item())
-        
-        if (batch_idx) % print_every == 0:
-            print("Train Epoch: {}; Loss: {:.5f}".format(epoch + 1, loss.item()))
+        optimizer.step()
 
-    return losses
+        total_loss += loss.item() * batch_size
 
+        if (batch_idx + 1) % print_every == 0:
+            print("Train Epoch: {} Batch [{}/{}]\tLoss: {:.5f}".format(
+                epoch, batch_idx + 1, len(loader), loss.item()
+            ))
 
+    average_loss = total_loss / total_samples
+    print("Train Epoch: {} Average Loss: {:.5f}".format(epoch, average_loss))
 
+    return average_loss
 
-def val_visualize_captions(model, train_loader, val_loader, criterion, optimizer, device, vocab_size, vocab, epochs):
+def train_and_visualize_caps(epoch, train_dataloader, val_dataloader, model, optimizer, criterion, vocab, val_df, device):
     print_every = 400
+    total_loss = 0
+    total_samples = 0
     model.train()
-    for epoch in range(1, epochs+1):
-        for idx, (image, captions) in enumerate(iter(train_loader)):
-            image, captions = image.to(device), captions.to(device)
 
-            # Zero the gradients.
-            optimizer.zero_grad()
+    for batch_idx, (image, captions, _) in enumerate(train_dataloader):
+        images, captions = image.to(device), captions.to(device)
+        batch_size = images.size(0)
+        total_samples += batch_size
+        optimizer.zero_grad()
 
-            # Feed forward
-            outputs = model(image, captions)
-            
-            # Calculate the batch loss.
-            loss = criterion(outputs.view(-1, vocab_size), captions.view(-1))
+        # Enable teacher forcing with a probability of 0.5
+        teacher_forcing_prob = 0.5
+        outputs = model(images, captions, teacher_forcing_prob)
 
-            
-            # Backward pass.
-            loss.backward()
+        # Calculate the batch loss.
+        loss = criterion(outputs.view(-1, outputs.size(-1)), captions.view(-1))
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item() * batch_size
 
-            # Update the parameters in the optimizer.
-            optimizer.step()
-            
-            if (idx+1) % print_every == 0:
-                print("Epoch: {} loss: {:.5f}".format(epoch,loss.item()))
-                
-                
-                # Generate the caption
-                model.eval()
-                with torch.no_grad():
-                    dataiter = iter(val_loader)
-                    img, _ = next(dataiter)
-                    features = model.encoder(img[0:1].to(device))
-                    print(f"features shape - {features.shape}")
-                    caps = model.decoder.generate_caption(features.unsqueeze(0), vocab=vocab)
-                    caption = ' '.join(caps)
-                    print(caption)
-                    show_image(img[0], title=caption)
-                    
-                model.train()
+        if (batch_idx + 1) % print_every == 0:
+            print("Train Epoch: {} Batch [{}/{}]\tLoss: {:.5f}".format(
+                epoch, batch_idx + 1, len(train_dataloader), loss.item()
+            ))
+
+            # Generate the caption
+            model.eval()
+            with torch.no_grad():
+                dataiter = iter(val_dataloader)
+                img, captions_val, img_dir = next(dataiter)
+                df_filtered = val_df.loc[val_df['image'] == img_dir[0], 'caption']
+                original_captions = [caption.lower() for caption in df_filtered]  # List of all the original captions
+                features = model.encoder(img[0:1].to(device))
+                caps = model.decoder.generate_caption(features.unsqueeze(0), vocab=vocab)
+                pred_caption = ' '.join(caps)
+                pred_caption = ' '.join(pred_caption.split()[1:-1])  # Remove SOS and EOS tokens from the predicted caption
+                original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption)  # Call to function in utils.py
+                print("Best original caption (1 out of 5):", original_caption)
+                print("Predicted caption:", pred_caption)
+                print("BLEU score:", bleu_score)
+                show_image(img[0], title=pred_caption)
+
+            model.train()
+
+    average_loss = total_loss / total_samples
+    print("Train Epoch: {} - Training set: AVERAGE TRAINING LOSS: {:.5f}".format(epoch, average_loss))
+    return average_loss
+
+
+# In this function we visualize the generated captions 
+# for the val or test set once the model is trained to see its performance
+def evaluate_caps( model, loader, df, vocab, device):
+    print_every = 50
+    #generate the caption
+    model.eval()
+    with torch.no_grad():
+        for idx, (img, captions,img_dir) in enumerate(iter(loader)):
+            if (idx+1)%print_every == 0:
+                df_filtered = df.loc[df['image'] == img_dir[0], 'caption']
+                original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
+                features = model.encoder(img[0:1].to(device))
+                print(f"features shape - {features.shape}")
+                caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+                pred_caption = ' '.join(caps)
+                pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
+                original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
+                print("Best original caption (1 out of 5):", original_caption)
+                print("Predicted caption:", pred_caption)
+                print("BLEU score:", bleu_score)
+                show_image(img[0],title=pred_caption)
