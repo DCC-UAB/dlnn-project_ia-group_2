@@ -37,20 +37,18 @@ class DecoderRNN(nn.Module):
         self.drop = nn.Dropout(drop_prob)
         self.vocab_size = vocab_size
 
-    def forward(self, features, captions):
-        embeddings = self.embedding(captions)
-        embeddings = self.drop(embeddings)
+    def forward(self, features, captions, use_teacher_forcing = True):
+        embeds = self.embedding(captions[:, :-1])
+        x = torch.cat((features.unsqueeze(1), embeds), dim=1)
+        x, _ = self.lstm(x)
+        x = self.fcn(x)
+        
+        if use_teacher_forcing:
+            return x
+        else:
+            return x.argmax(dim=2)
 
-        # Concatenate features and embeddings
-        inputs = torch.cat((features.unsqueeze(1), embeddings), dim=1)
-
-        # Pass through LSTM
-        lstm_out, _ = self.lstm(inputs)
-
-        # Reshape and apply fully connected layer
-        outputs = self.fcn(lstm_out[:, -1, :])
-
-        return outputs
+  
 
     def create_embedding_layer(self, weights_matrix, non_trainable=False):
         num_embeddings, embedding_dim = weights_matrix.size()
@@ -61,35 +59,37 @@ class DecoderRNN(nn.Module):
 
         return emb_layer, num_embeddings, embedding_dim
 
-    def generate_caption(self, features, max_len, vocab):
-        batch_size = features.size(0)
-        hidden = None
+    def generate_caption(self, features, max_len, vocab, use_teacher_forcing=False):
+                # Given the image features generate the caption
+        batch_size = inputs.size(0)
         captions = []
-
-        # Generate captions one word at a time
-        for _ in range(max_len):
-            if len(captions) == 0:
-                inputs = self.embedding(torch.zeros(batch_size, 1).long().to(features.device))
+        for i in range(max_len):
+            output,hidden = self.lstm(inputs,hidden)
+            output = self.fcn(output)
+            output = output.view(batch_size,-1)
+            
+            if use_teacher_forcing:
+                predicted_word_idx = output.argmax(dim=1)
             else:
-                inputs = self.embedding(torch.LongTensor(captions).unsqueeze(1).to(features.device))
-
-            lstm_out, hidden = self.lstm(torch.cat((features.unsqueeze(1), inputs), dim=1), hidden)
-            outputs = self.fcn(lstm_out.squeeze(1))
-
-            # Get predicted word indices
-            _, predicted_word_idx = outputs.max(dim=1)
-            predicted_word_idx = predicted_word_idx.squeeze().tolist()
-
-            # Save the generated word
-            captions.append(predicted_word_idx)
-
-            # End if <EOS> detected
-            if all(idx == vocab["<EOS>"] for idx in predicted_word_idx):
+                predicted_word_idx = output.argmax(dim=1)
+                inputs = self.embedding(predicted_word_idx.unsqueeze(1))
+        
+            #select the word with most val
+            predicted_word_idx = output.argmax(dim=1)
+            
+            #save the generated word
+            captions.append(predicted_word_idx.item())
+            
+            #end if <EOS detected>
+            if vocab[predicted_word_idx.item()] == "<EOS>":
                 break
+            
+            # Embed the predicted word to the next time step
+            inputs = self.embedding(predicted_word_idx.unsqueeze(1))
+        
+         #convert the vocab idx to words and return generated sentence
+        return [vocab[idx] for idx in captions]  
 
-        # Convert the vocab indices to words and return the generated sentence
-        generated_sentence = [vocab.idx2word[idx] for idx in captions]
-        return generated_sentence
     
 class EncoderDecoder_2(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size,num_layers=1,drop_prob=0.3, weight_matrix=None):

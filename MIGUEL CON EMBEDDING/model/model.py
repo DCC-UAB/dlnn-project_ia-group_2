@@ -25,7 +25,6 @@ class EncoderCNN(nn.Module):
         return features
 
 
-
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3, weight_matrix=None, pretrained=True):
         super(DecoderRNN,self).__init__()
