@@ -38,7 +38,6 @@ def evaluate_caps(model, loader, df, vocab, device):
                 df_filtered = df.loc[df['image'] == img_dir[0], 'caption']
                 original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
                 features = model.encoder(img[0:1].to(device))
-                print(f"features shape - {features.shape}")
                 caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
                 pred_caption = ' '.join(caps)
                 pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
@@ -46,7 +45,8 @@ def evaluate_caps(model, loader, df, vocab, device):
                 print("Best original caption (1 out of 5):", original_caption)
                 print("Predicted caption:", pred_caption)
                 print("BLEU score:", bleu_score)
-                show_image(img[0],title=pred_caption)
+                for i in range (len(25)):
+                    show_image(img[i].cpu(),title=pred_caption)
     
         
 

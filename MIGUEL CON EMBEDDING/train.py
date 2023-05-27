@@ -11,7 +11,7 @@ import torchvision.transforms as transforms
 def train(epoch, criterion, model, optimizer, loader, device):
     total_samples = 0
     total_loss = 0.0
-    print_every = 250
+
 
     model.train()
 
