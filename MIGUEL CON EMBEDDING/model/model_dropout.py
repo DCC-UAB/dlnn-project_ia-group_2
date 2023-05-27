@@ -82,9 +82,9 @@ class DecoderRNN(nn.Module):
          #convert the vocab idx to words and return generated sentence
         return [vocab[idx] for idx in captions]  
 
-class EncoderDecoder(nn.Module):
+class EncoderDecoder_dropout(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size,num_layers=1,drop_prob=0.3, weight_matrix=None):
-        super(EncoderDecoder, self).__init__()
+        super(EncoderDecoder_dropout, self).__init__()
         self.encoder = EncoderCNN(embed_size)
         self.decoder = DecoderRNN(embed_size,hidden_size,vocab_size,num_layers,drop_prob, weight_matrix=None)
     
