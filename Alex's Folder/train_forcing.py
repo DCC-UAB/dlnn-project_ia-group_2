@@ -3,7 +3,6 @@ from get_loader import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from utils.utils_3 import best_bleu_cap
-import torchvision.transforms as transforms
 
 # Here we only print and calculate the validation loss
 def validate(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
