@@ -6,6 +6,7 @@ import torchvision.models as models
 
 
 
+
 class EncoderCNN(nn.Module):
     def __init__(self,embed_size):
         super(EncoderCNN,self).__init__()
@@ -25,54 +26,41 @@ class EncoderCNN(nn.Module):
         return features
 
 class DecoderRNN(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3, weight_matrix=None, pretrained=True):
-        super(DecoderRNN, self).__init__()
-        if weight_matrix is not None:
-            self.embedding, vocab_size, embed_size = self.create_embedding_layer(weight_matrix, pretrained)
-        else:
-            self.embedding = nn.Embedding(vocab_size, embed_size)
+    def __init__(self,embed_size,hidden_size,vocab_size,num_layers=1,drop_prob=0.3):
+            super(DecoderRNN,self).__init__()
+            self.embedding = nn.Embedding(vocab_size,embed_size)
+            self.lstm = nn.LSTM(embed_size,hidden_size,num_layers=num_layers,batch_first=True)
+            self.batch_norm = nn.BatchNorm1d(hidden_size)  # Add batch normalization layer
+            self.fcn = nn.Linear(hidden_size,vocab_size)
+            self.drop = nn.Dropout(drop_prob)
         
-        self.lstm = nn.LSTM(embed_size + hidden_size, hidden_size, num_layers, batch_first=True)
-        self.fcn = nn.Linear(hidden_size, vocab_size)
-        self.drop = nn.Dropout(drop_prob)
-        self.vocab_size = vocab_size
-
-    def forward(self, features, captions, use_teacher_forcing = True):
-        embeds = self.embedding(captions[:, :-1])
-        x = torch.cat((features.unsqueeze(1), embeds), dim=1)
-        x, _ = self.lstm(x)
+    def forward(self, features, captions, teacher_forcing_prob=0.5):
+        # vectorize the caption
+        # caption shape - torch.Size([4, 14])
+        embeds = self.embedding(captions[:,:-1]) # shape of embeds - torch.Size([4, 14, 400])
+        # features shape - torch.Size([4, 400])
+        x = torch.cat((features.unsqueeze(1),embeds),dim=1) # features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
+        # shape of x - torch.Size([4, 15, 400])
+        x,_ = self.lstm(x)
+        # shape of x after lstm - torch.Size([4, 15, 512])
         x = self.fcn(x)
-        
-        if use_teacher_forcing:
-            return x
-        else:
-            return x.argmax(dim=2)
 
-  
+        if self.training and teacher_forcing_prob > 0.0:
+            use_teacher_forcing = torch.rand(1).item() < teacher_forcing_prob
+            if use_teacher_forcing:
+                 x = x[:, :-1, :] # Exclude the last predicted step, , so ground truth is used from the second to the last time, ignoring predicted step.
 
-    def create_embedding_layer(self, weights_matrix, non_trainable=False):
-        num_embeddings, embedding_dim = weights_matrix.size()
-        emb_layer = nn.Embedding(num_embeddings, embedding_dim)
-        emb_layer.load_state_dict({'weight': weights_matrix})
-        if non_trainable:
-            emb_layer.weight.requires_grad = False
+        return x
 
-        return emb_layer, num_embeddings, embedding_dim
+    def generate_caption(self,inputs,hidden=None,max_len=25,vocab=None):
 
-    def generate_caption(self, features, max_len, vocab, use_teacher_forcing=False):
-                # Given the image features generate the caption
+        # Given the image features generate the caption
         batch_size = inputs.size(0)
         captions = []
         for i in range(max_len):
             output,hidden = self.lstm(inputs,hidden)
             output = self.fcn(output)
             output = output.view(batch_size,-1)
-            
-            if use_teacher_forcing:
-                predicted_word_idx = output.argmax(dim=1)
-            else:
-                predicted_word_idx = output.argmax(dim=1)
-                inputs = self.embedding(predicted_word_idx.unsqueeze(1))
         
             #select the word with most val
             predicted_word_idx = output.argmax(dim=1)
@@ -87,17 +75,16 @@ class DecoderRNN(nn.Module):
             # Embed the predicted word to the next time step
             inputs = self.embedding(predicted_word_idx.unsqueeze(1))
         
-         #convert the vocab idx to words and return generated sentence
+            #convert the vocab idx to words and return generated sentence
         return [vocab[idx] for idx in captions]  
-
-    
-class EncoderDecoder_2(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size,num_layers=1,drop_prob=0.3, weight_matrix=None):
-        super(EncoderDecoder_2, self).__init__()
+  
+class EncoderDecoder2(nn.Module):
+    def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3):
+        super(EncoderDecoder2, self).__init__()
         self.encoder = EncoderCNN(embed_size)
-        self.decoder = DecoderRNN(embed_size,hidden_size,vocab_size,num_layers,drop_prob, weight_matrix=None)
-    
-    def forward(self, images, captions):
+        self.decoder = DecoderRNN(embed_size, hidden_size, vocab_size, num_layers, drop_prob)
+
+    def forward(self, images, captions, teacher_forcing_prob=0.5):
         features = self.encoder(images)
-        outputs = self.decoder(features, captions)
+        outputs = self.decoder(features, captions, teacher_forcing_prob)
         return outputs
