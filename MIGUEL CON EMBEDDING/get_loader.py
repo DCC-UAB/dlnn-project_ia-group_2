@@ -111,11 +111,6 @@ def get_loader(data_dir, dataframe, transform=None, batch_size=None, num_workers
                          pin_memory=pin_memory, drop_last=True) 
     return data_loader 
  
-def get_length_vocab(data_dir, dataframe, transform=None):
-    dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
-    length = len(dataset.vocab)
-    return length
-
 def get_vocab(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     vocab = dataset.vocab
