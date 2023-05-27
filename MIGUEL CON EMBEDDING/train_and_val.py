@@ -2,7 +2,7 @@ import torch
 from get_loader import show_image
 import matplotlib.pyplot as plt
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from utils.utils_2 import best_bleu_cap
+from utils.utils import best_bleu_cap
 import torchvision.transforms as transforms
 
 
