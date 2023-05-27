@@ -1,9 +1,10 @@
 import wandb
 import torch
 from get_loader import show_image
-from utils.utils_2 import best_bleu_cap
+from utils.utils import best_bleu_cap
 
-def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
+# Here we only print and calculate the validation loss
+def validate(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
 
     model.eval()
     total_loss = 0
@@ -21,11 +22,14 @@ def test(criterion, model, loader, device): # vocab tendria q ser train_vocab_df
             total_loss += loss.item() * batch_size
 
     average_loss = total_loss / total_samples
+    print("Validation set: AVERAGE VALIDATION LOSS: {:.5f}".format(average_loss))
     return average_loss
 
-# ONLY FOR ONE BATCH
-def test_caps( model, loader, df, vocab, device):
-    print_every = 50
+
+# In this function we visualize the generated captions 
+# for the val or test set once the model is trained to see its performance
+def evaluate_caps(model, loader, df, vocab, device):
+    print_every = 25
     #generate the caption
     model.eval()
     with torch.no_grad():

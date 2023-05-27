@@ -25,34 +25,27 @@ class EncoderCNN(nn.Module):
         return features
 
 
-
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob=0.3, weight_matrix=None, pretrained=True):
         super(DecoderRNN,self).__init__()
         if weight_matrix is not None:
             self.embedding, vocab_size, embed_size = self.create_embedding_layer(weight_matrix, pretrained)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
-            self.batch_norm = nn.BatchNorm1d(hidden_size)  
             self.fcn = nn.Linear(hidden_size, vocab_size)
             self.drop = nn.Dropout(drop_prob)
         else:
             self.embedding = nn.Embedding(vocab_size, embed_size)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
-            self.batch_norm = nn.BatchNorm1d(hidden_size)  # Add batch normalization layer
+
             self.fcn = nn.Linear(hidden_size,vocab_size)
             self.drop = nn.Dropout(drop_prob)
     
-    def forward(self,features, captions):
-
-        if self.training:
-            embeds = self.embedding(captions[:, :-1])
-        else:
-            embeds = self.embedding(torch.zeros(captions.size(0), 1).long().to(captions.device))
-        
-        x = torch.cat((features.unsqueeze(1), embeds), dim=1)
-        x, _ = self.lstm(x)
-        x = self.fcn(x)
-        return x
+    def forward(self, features, captions):
+        embeddings = self.embedding(captions[:, :-1])
+        inputs = torch.cat((features.unsqueeze(1), embeddings), dim=1)
+        outputs, _ = self.lstm(inputs)
+        outputs = self.fcn(outputs)
+        return outputs
 
     def create_embedding_layer(weights_matrix, non_trainable=False):
         num_embeddings, embedding_dim = weights_matrix.size()
