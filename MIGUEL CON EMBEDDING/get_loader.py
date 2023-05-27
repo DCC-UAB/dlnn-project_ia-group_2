@@ -100,6 +100,7 @@ class ImageCaptionDataset(Dataset):
         padded_caption = caption[:self.max_caption_length]
         padded_caption += [self.vocab.stoi["<PAD>"]] * (self.max_caption_length - len(padded_caption))
         return padded_caption
+    
 
 
 def get_loader(data_dir, dataframe, transform=None, batch_size=None, num_workers=1, shuffle=True, pin_memory=True):
@@ -107,7 +108,7 @@ def get_loader(data_dir, dataframe, transform=None, batch_size=None, num_workers
     pad_idx = dataset.vocab.stoi['<PAD>']
     data_loader  = DataLoader(dataset=dataset, batch_size=batch_size,
                          num_workers=num_workers, shuffle=shuffle,
-                         pin_memory=pin_memory) 
+                         pin_memory=pin_memory, drop_last=True) 
     return data_loader 
  
 def get_length_vocab(data_dir, dataframe, transform=None):
@@ -139,10 +140,10 @@ def get_pad_index(data_dir, dataframe, transform=None):
     pad_idx = dataset.vocab.stoi['<PAD>']
     return pad_idx
 
-'''
 def main():
-    img_dir = "data/Images"
-    captions_file = "data/captions.txt"
+    main_path_miguel = 'C:/Users/Miguel/OneDrive/Escritorio/dlnn-project_ia-group_2/'
+    img_dir = main_path_miguel + 'data/Images/'
+    captions_file = main_path_miguel + 'data/captions.txt'
     transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor()])
@@ -177,11 +178,11 @@ def main():
     
 
     # Print the shapes of train, validation, and test batches
-    for idx, (imgs, captions) in enumerate(train_dataloader):
+    for idx, (imgs, captions, _) in enumerate(train_dataloader):
         print("Train batch - Images shape:", imgs.shape)
         print("Train batch - Captions shape:", captions.shape)
   
-
+'''
     for idx, (imgs, captions) in enumerate(val_dataloader):
         print("Validation batch - Images shape:", imgs.shape)
         print("Validation batch - Captions shape:", captions.shape)
@@ -200,9 +201,8 @@ def main():
     print(vocab_train_df)
     print(vocab_val_df)
     print(vocab_test_df)
-    
+'''  
 
 if __name__ == "__main__":
     main()
     
-'''

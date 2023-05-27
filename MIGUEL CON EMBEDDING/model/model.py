@@ -41,15 +41,11 @@ class DecoderRNN(nn.Module):
             self.drop = nn.Dropout(drop_prob)
     
     def forward(self, features, captions):
-
-
-        embeds = self.embedding(captions[:, :-1])
-       
-        
-        x = torch.cat((features.unsqueeze(1), embeds), dim=1)
-        x, _ = self.lstm(x)
-        x = self.fcn(x)
-        return x
+        embeddings = self.embedding(captions[:, :-1])
+        inputs = torch.cat((features.unsqueeze(1), embeddings), dim=1)
+        outputs, _ = self.lstm(inputs)
+        outputs = self.fcn(outputs)
+        return outputs
 
     def create_embedding_layer(weights_matrix, non_trainable=False):
         num_embeddings, embedding_dim = weights_matrix.size()
