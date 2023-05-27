@@ -1,10 +1,10 @@
-import wandb
+
 import torch
 import torch.nn 
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
-from model.model import *
+from FORCING_model2 import EncoderDecoder
 import nltk
 
 def best_bleu_cap(list_original_caps, pred_cap):
@@ -30,23 +30,3 @@ def best_bleu_cap(list_original_caps, pred_cap):
     return best_caption, best_bleu_score
 
 
-def weights_matrix(vocab, emb_dim, glove_embedding):
-    """
-    Input:
-        - Vocabulary of dataset format -> {idx : word}
-        - Embedding dimension
-        
-    Function returns a matrix with weight values that reresent the pretrained embedding.
-    """
-    matrix_len = len(vocab)
-    weights_matrix = np.zeros((matrix_len, 100))
-    words_found = 0
-
-    for i, word in enumerate(vocab):
-        try: 
-            weights_matrix[i] = glove_embedding[word]
-            words_found += 1
-        except KeyError:
-            weights_matrix[i] = np.random.normal(scale=0.6, size=(emb_dim, ))
-    
-    return weights_matrix
