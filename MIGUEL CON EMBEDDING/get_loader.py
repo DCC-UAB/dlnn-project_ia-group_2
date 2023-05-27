@@ -101,8 +101,6 @@ class ImageCaptionDataset(Dataset):
         padded_caption += [self.vocab.stoi["<PAD>"]] * (self.max_caption_length - len(padded_caption))
         return padded_caption
     
-
-
 def get_loader(data_dir, dataframe, transform=None, batch_size=None, num_workers=1, shuffle=True, pin_memory=True):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     pad_idx = dataset.vocab.stoi['<PAD>']
@@ -115,11 +113,6 @@ def get_vocab(data_dir, dataframe, transform=None):
     dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
     vocab = dataset.vocab
     return vocab.itos
-
-def get_vocab_stoi(data_dir, dataframe, transform=None):
-    dataset = ImageCaptionDataset(data_dir=data_dir, dataframe=dataframe, transform=transform)
-    vocab = dataset.vocab
-    return vocab.stoi
 
 def show_image(tensor, title=None):
     """Imshow for Tensor"""
@@ -135,69 +128,4 @@ def get_pad_index(data_dir, dataframe, transform=None):
     pad_idx = dataset.vocab.stoi['<PAD>']
     return pad_idx
 
-def main():
-    main_path_miguel = 'C:/Users/Miguel/OneDrive/Escritorio/dlnn-project_ia-group_2/'
-    img_dir = main_path_miguel + 'data/Images/'
-    captions_file = main_path_miguel + 'data/captions.txt'
-    transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor()])
-    
-    # Split data into train and test sets
-    df_captions = pd.read_csv(captions_file)
-    unique_images = df_captions['image'].unique()
-    train_images, test_images = train_test_split(unique_images, test_size=0.2, random_state=42)
-    train_images, val_images = train_test_split(train_images, test_size=0.2, random_state=42)
-    
-    train_df = df_captions[df_captions['image'].isin(train_images)]
-    val_df = df_captions[df_captions['image'].isin(val_images)]
-    test_df = df_captions[df_captions['image'].isin(test_images)]
-    
-    lenght_train_df = get_length_vocab(data_dir=img_dir, dataframe=train_df, transform=transform)
-    lenght_val_df = get_length_vocab(data_dir=img_dir, dataframe=val_df, transform=transform)
-    lenght_test_df = get_length_vocab(data_dir=img_dir, dataframe=test_df, transform=transform)
-    
-    vocab_train_df = get_vocab(data_dir=img_dir, dataframe=train_df, transform=transform)
-    vocab_val_df = get_vocab(data_dir=img_dir, dataframe=val_df, transform=transform)
-    vocab_test_df = get_vocab(data_dir=img_dir, dataframe=test_df, transform=transform)
 
-
-    
-    pad_index = get_pad_index(data_dir=img_dir, dataframe=train_df, transform=transform)
-    
-    # Create train, validation, and test data loaders
-    train_dataloader = get_loader(data_dir=img_dir, dataframe=train_df, transform=transform)
-    val_dataloader = get_loader(data_dir=img_dir, dataframe=val_df, transform=transform)
-    test_dataloader = get_loader(data_dir=img_dir, dataframe=test_df, transform=transform)
-    
-    
-
-    # Print the shapes of train, validation, and test batches
-    for idx, (imgs, captions, _) in enumerate(train_dataloader):
-        print("Train batch - Images shape:", imgs.shape)
-        print("Train batch - Captions shape:", captions.shape)
-  
-'''
-    for idx, (imgs, captions) in enumerate(val_dataloader):
-        print("Validation batch - Images shape:", imgs.shape)
-        print("Validation batch - Captions shape:", captions.shape)
-    
-    for idx, (imgs, captions) in enumerate(test_dataloader):
-        print("Test batch - Images shape:", imgs.shape)
-        print("Test batch - Captions shape:", captions.shape)
-        
-    
-    print(lenght_train_df)
-    print(lenght_val_df)
-    print(lenght_test_df)
-    
-    print(pad_index)
-    
-    print(vocab_train_df)
-    print(vocab_val_df)
-    print(vocab_test_df)
-'''  
-
-if __name__ == "__main__":
-    main()
-    
