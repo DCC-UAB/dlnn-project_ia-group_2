@@ -98,7 +98,7 @@ class ImageCaptionDataset(Dataset):
     
     def padded_caption(self, caption):
         padded_caption = caption[:self.max_caption_length]
-        padded_caption += [self.vocab.stoi["<PAD>"]] * (self.max_caption_length - len(caption))
+        padded_caption += [self.vocab.stoi["<PAD>"]] * (self.max_caption_length - len(padded_caption))
         return padded_caption
 
 
