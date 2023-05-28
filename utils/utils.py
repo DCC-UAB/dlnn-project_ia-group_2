@@ -52,3 +52,4 @@ def weights_matrix(vocab, emb_dim, glove_embedding):
             weights_matrix[i] = np.random.normal(scale=0.6, size=(emb_dim, ))
     
     return weights_matrix
+
