@@ -73,7 +73,7 @@ class DecoderRNN(nn.Module):
 
         return emb_layer, num_embeddings, embedding_dim
 
-    def generate_caption(self,inputs,hidden=None,max_len=25,vocab=None):
+    def generate_caption(self,inputs,hidden=None,max_len=20,vocab=None):
     
         # Given the image features generate the caption
         batch_size = inputs.size(0)
