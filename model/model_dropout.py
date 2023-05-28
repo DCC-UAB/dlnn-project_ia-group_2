@@ -29,13 +29,14 @@ class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, drop_prob = 0.3, weight_matrix=None, pretrained=True):
         super(DecoderRNN,self).__init__()
         if weight_matrix is not None:
-            print("using pretrained embedding")
+            print("Using pretrained embedding")
             self.embedding, vocab_size, embed_size = self.create_embedding_layer(weight_matrix, pretrained)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
             self.fcn = nn.Linear(hidden_size, vocab_size)
             self.drop = nn.Dropout(drop_prob)
 
         else:
+            print("Not using pretrained embedding")
             self.embedding = nn.Embedding(vocab_size, embed_size)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
             self.fcn = nn.Linear(hidden_size,vocab_size)
