@@ -38,9 +38,9 @@ Once you have this data, you will need to replicate the environment we used to d
 * The *train_and_val.py* script contains the training and validation functions that will be used to train and evaluate our model during the training phase, no pun intended. It also contains a training function that depicts some images from the training batch and shows the current epoch's caption prediction. 
 * The *train_val_test_split.py* script contains a function to split the dataset
 * The *generate_embedding_data.py* script automatically creates the needed folder with the needed scripts inside to use the pretrained embedding. You only need to provide the downladed .txt and it will automatically generate the folder. 
-* The *training_model.ipynb* notebook contains the training of our baseline model using the pretrained embedding and the *model.py* as model without dropout
-* The *training_model_dropout.ipynb* notebook contains  the training of another model using the pretrained embedding and the *model_dropout.py* as model with dropout
-* The *training_model_without_pre_embedding.ipynb* notebook contains the training of another model without using the pretrained embedding and the *model.py* as model (the same used in the baseline model)
+* The *training_model.ipynb* notebook contains the training of our baseline model using the pretrained embedding, aplying finnetuning and using the *model.py* as model, without dropout
+* The *training_model_dropout.ipynb* notebook contains the training of another model using the pretrained embedding, aplying finnetuning and the *model_dropout.py* as model, with dropout
+* The *training_model_without_pre_embedding.ipynb* notebook contains the training of another model without using the pretrained embedding and the *model.py* as model (the same used in the baseline model).
 
 
 ## Further improvements
