@@ -1,7 +1,10 @@
 import wandb
 import torch
+import numpy as np
+from torchvision import transforms
+import torchvision.transforms.functional as TF
 from get_loader import show_image
-from utils.utils import best_bleu_cap
+from utils.utils import best_bleu_cap, img_denorm
 
 # Function to validate the trained model, returns the average loss
 def validate(criterion, model, loader, device): 
@@ -43,6 +46,9 @@ def evaluate_caps(model, loader, df, vocab, device):
                     print("Best original caption (1 out of 5):", original_caption)
                     print("Predicted caption:", pred_caption)
                     print("BLEU score:", bleu_score)
+                    img = img_denorm(img=img, mean=np.array([0.485, 0.456, 0.406]), std=np.array([0.229, 0.224, 0.225]))
+                    # img = TF.to_pil_image(img)
+                    
                     show_image(img[0].cpu(),title=pred_caption)
         
 # Function to calculate the average test BLEU            

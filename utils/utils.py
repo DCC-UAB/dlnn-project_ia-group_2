@@ -53,3 +53,19 @@ def weights_matrix(vocab, emb_dim, glove_embedding):
     
     return weights_matrix
 
+
+def img_denorm(img, mean, std):
+    #for ImageNet the mean and std are:
+    #mean = np.asarray([ 0.485, 0.456, 0.406 ])
+    #std = np.asarray([ 0.229, 0.224, 0.225 ])
+
+    denormalize = transforms.Normalize((-1 * mean / std), (1.0 / std))
+
+    res = img.squeeze(0)
+    res = denormalize(res)
+
+    #Image needs to be clipped since the denormalize function will map some
+    #values below 0 and above 1
+    res = torch.clamp(res, 0, 1)
+    
+    return(res)
