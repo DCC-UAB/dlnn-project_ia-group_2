@@ -26,11 +26,15 @@ class EncoderCNN(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, weight_matrix=None, pretrained=True):
+    def __init__(self, embed_size, hidden_size, vocab_size, num_layers=1, weight_matrix=None, finetune_embedding=False):
         super(DecoderRNN,self).__init__()
         if weight_matrix is not None:
-            print('Using pretrained model embedding')
-            self.embedding, vocab_size, embed_size = self.create_embedding_layer(weight_matrix, pretrained)
+            if finetune_embedding:
+                print('Using pretrained model embedding and finetuning it.')
+            else:
+                print('Using pretrained model embedding and not finetuning it.')
+                
+            self.embedding, vocab_size, embed_size = self.create_embedding_layer(weight_matrix, finetune_embedding)
             self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
             self.fcn = nn.Linear(hidden_size, vocab_size)
    
@@ -42,25 +46,23 @@ class DecoderRNN(nn.Module):
   
     
     def forward(self, features, captions):
-        
         # Embedding
         embeddings = self.embedding(captions[:, :-1])
-        
         # Concatenate embeddings and CNN features
         inputs = torch.cat((features.unsqueeze(1), embeddings), dim=1)
-        
         # LSTM
         outputs, _ = self.lstm(inputs)
-        
         # Fully connected layer
         outputs = self.fcn(outputs)
         return outputs
 
-    def create_embedding_layer(self, weights_matrix, non_trainable=False):
+    def create_embedding_layer(self, weights_matrix, finetune_embedding=False):
         num_embeddings, embedding_dim = weights_matrix.size()
         emb_layer = nn.Embedding(num_embeddings, embedding_dim)
         emb_layer.load_state_dict({'weight': weights_matrix})
-        if non_trainable:
+        if finetune_embedding:
+            emb_layer.weight.requires_grad = True
+        else:
             emb_layer.weight.requires_grad = False
 
         return emb_layer, num_embeddings, embedding_dim
@@ -92,10 +94,10 @@ class DecoderRNN(nn.Module):
         return [vocab[idx] for idx in captions]  
 
 class EncoderDecoder(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size,num_layers=1, weight_matrix=None):
+    def __init__(self, embed_size, hidden_size, vocab_size,num_layers=1, weight_matrix=None, finetune_embedding=False):
         super(EncoderDecoder, self).__init__()
         self.encoder = EncoderCNN(embed_size)
-        self.decoder = DecoderRNN(embed_size,hidden_size,vocab_size,num_layers, weight_matrix)
+        self.decoder = DecoderRNN(embed_size,hidden_size,vocab_size,num_layers, weight_matrix, finetune_embedding)
     
     def forward(self, images, captions):
         features = self.encoder(images)
