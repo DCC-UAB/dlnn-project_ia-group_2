@@ -2,7 +2,11 @@ import bcolz
 import pickle
 import numpy as np
 
-main_path_miguel = r'C:\Users\Miguel\OneDrive\Escritorio\dlnn-project_ia-group_2\GLOVE EMBEDDING\glove_files'
+'''
+File to generate the needed Pickles and other files to
+use the pretrained embedding by only having the txt
+'''
+main_path_miguel = r'C:\Users\Miguel\OneDrive\Escritorio\dlnn-project_ia-group_2\GLOVE EMBEDDING\300dim_embedding'
 main_path_pol = r"C:\Users\polme\OneDrive - UAB\Escritorio\Universitat\Deep Learning\Embeddings"
 
 
