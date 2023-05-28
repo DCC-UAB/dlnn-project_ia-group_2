@@ -13,7 +13,7 @@ class EncoderCNN(nn.Module):
         for param in resnet.parameters():
             param.requires_grad_(False)
         
-        modules = list(resnet.children())[:-1] # To extract the features of Rsenet from the last layer before the Softmax is applied
+        modules = list(resnet.children())[:-1] # To extract the features of Rsenet from the last layer 
         self.resnet = nn.Sequential(*modules)
         self.embed = nn.Linear(resnet.fc.in_features,embed_size) 
         
@@ -42,9 +42,17 @@ class DecoderRNN(nn.Module):
   
     
     def forward(self, features, captions):
+        
+        # Embedding
         embeddings = self.embedding(captions[:, :-1])
+        
+        # Concatenate embeddings and CNN features
         inputs = torch.cat((features.unsqueeze(1), embeddings), dim=1)
+        
+        # LSTM
         outputs, _ = self.lstm(inputs)
+        
+        # Fully connected layer
         outputs = self.fcn(outputs)
         return outputs
 
@@ -93,14 +101,5 @@ class EncoderDecoder(nn.Module):
         features = self.encoder(images)
         outputs = self.decoder(features, captions)
         return outputs
-# resenet features shape - torch.Size([4, 2048, 1, 1])
-# resenet features viewed shape - torch.Size([4, 2048])
-# resenet features embed shape - torch.Size([4, 400])
-# caption shape - torch.Size([4, 14])
-# shape of embeds - torch.Size([4, 14, 400])
-# features shape - torch.Size([4, 400])
-# features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
-# shape of x - torch.Size([4, 15, 400])
-# shape of x after lstm - torch.Size([4, 15, 512])
-# shape of x after fcn - torch.Size([4, 15, 2994])
+
 

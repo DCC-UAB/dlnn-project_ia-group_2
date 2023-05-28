@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
 import torchvision.models as models
-# from utils.utils import create_embedding_layer
+
 
 
 class EncoderCNN(nn.Module):
@@ -13,7 +13,7 @@ class EncoderCNN(nn.Module):
         for param in resnet.parameters():
             param.requires_grad_(False)
         
-        modules = list(resnet.children())[:-1] # To extract the features of Rsenet from the last layer before the Softmax is applied
+        modules = list(resnet.children())[:-1] # To extract the features of Rsenet from the last layer 
         self.resnet = nn.Sequential(*modules)
         self.embed = nn.Linear(resnet.fc.in_features,embed_size) 
         
@@ -43,11 +43,19 @@ class DecoderRNN(nn.Module):
 
     
     def forward(self, features, captions):
+        
+        # Embedding
         embeddings = self.embedding(captions[:, :-1])
         embeddings = self.drop(embeddings)
+        
+        # Concatenate features and embeddings
         inputs = torch.cat((features.unsqueeze(1), embeddings), dim=1)
+        
+        # LSTM layer
         outputs, _ = self.lstm(inputs)
         outputs = self.drop(outputs)
+        
+         # Fully connected layer
         outputs = self.fcn(outputs)
         return outputs
 
@@ -70,7 +78,7 @@ class DecoderRNN(nn.Module):
             output = self.fcn(output)
             output = output.view(batch_size,-1)
         
-            #select the word with most val
+            #select the word with highest val
             predicted_word_idx = output.argmax(dim=1)
             
             #save the generated word
@@ -96,14 +104,5 @@ class EncoderDecoder_dropout(nn.Module):
         features = self.encoder(images)
         outputs = self.decoder(features, captions)
         return outputs
-# resenet features shape - torch.Size([4, 2048, 1, 1])
-# resenet features viewed shape - torch.Size([4, 2048])
-# resenet features embed shape - torch.Size([4, 400])
-# caption shape - torch.Size([4, 14])
-# shape of embeds - torch.Size([4, 14, 400])
-# features shape - torch.Size([4, 400])
-# features unsqueeze at index 1 shape - torch.Size([4, 1, 400])
-# shape of x - torch.Size([4, 15, 400])
-# shape of x after lstm - torch.Size([4, 15, 512])
-# shape of x after fcn - torch.Size([4, 15, 2994])
+
 
