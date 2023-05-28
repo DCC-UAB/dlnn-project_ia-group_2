@@ -45,4 +45,23 @@ def evaluate_caps(model, loader, df, vocab, device):
                     print("BLEU score:", bleu_score)
                     show_image(img[0].cpu(),title=pred_caption)
         
-            
+# Function to calculate the average test BLEU            
+def average_test_BLEU(model, loader, df, vocab, device):
+    model.eval()
+    total_bleu_score = 0.0
+    total_predictions = 0
+
+    with torch.no_grad():
+        for idx, (img, captions, img_dir) in enumerate(iter(loader)):
+            df_filtered = df.loc[df['image'] == img_dir[0], 'caption']
+            original_captions = [caption.lower() for caption in df_filtered] # list of all the original captions
+            features = model.encoder(img[0:1].to(device))
+            caps = model.decoder.generate_caption(features.unsqueeze(0),vocab=vocab)
+            pred_caption = ' '.join(caps)
+            pred_caption = ' '.join(pred_caption.split()[1:-1]) # to erase sos and eos tokens from pred caption
+            total_predictions += 1
+            original_caption, bleu_score = best_bleu_cap(original_captions, pred_caption) # call to function in utils.py
+            total_bleu_score += bleu_score
+
+    average_bleu_score = total_bleu_score / total_predictions
+    print("Average test BLEU-1 score:", average_bleu_score)
