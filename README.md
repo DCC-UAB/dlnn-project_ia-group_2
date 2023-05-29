@@ -102,6 +102,16 @@ Metemos algo aquí? Es que nosotros tenemos los notebooks, no el resto de cosas.
 
 <br/>
 
+## Output examples retrieved from our 30k model trained
+
+<img src="docs/example1.png" width="700">
+
+<img src="docs/example2.png" width="600">
+
+<img src="docs/example3.png" width="760">
+
+<br/>
+
 ## Contributors
 * **Miguel Moral Hernández - miguel.moral@autonoma.cat**
 * **Àlex Sànchez Zurita - alex.sanchezz@autonoma.cat**
