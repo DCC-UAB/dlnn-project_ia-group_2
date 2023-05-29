@@ -95,10 +95,11 @@ As external files, you will need:
 <img src="docs/different_models.png" width="1200">
 
 *Image 2: Definition of different trained models.*
+
 <br/>
 
-## Example Code
-Metemos algo aquí? Es que nosotros tenemos los notebooks, no el resto de cosas. En principio nada, pero podríamos hacer un main que chequee todas las dependencias para comprobar que todo está funcionando bien. Si no eliminamos y fin.
+## Why isn't there a main.py?
+Since we wanted to run the same model trained with different parameters we decided to run all the training in different python notebooks. If you want to test whether you have installed all dependencies, run the first cells on any of the notebooks. Just remember to set the path to your data folders (such as the FlickrDataset and the GloVe embedding data).
 
 <br/>
 
