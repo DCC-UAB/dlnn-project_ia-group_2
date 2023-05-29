@@ -38,9 +38,11 @@ Once you have this data, you will need to replicate the environment we used to d
 * The *train_and_val.py* script contains the training and validation functions that will be used to train and evaluate our model during the training phase, no pun intended. It also contains a training function that depicts some images from the training batch and shows the current epoch's caption prediction. 
 * The *train_val_test_split.py* script contains a function to split the dataset
 * The *generate_embedding_data.py* script automatically creates the needed folder with the needed scripts inside to use the pretrained embedding. You only need to provide the downladed .txt and it will automatically generate the folder. 
-* The *training_model.ipynb* notebook contains the training of our baseline model using the pretrained embedding, aplying finnetuning and using the *model.py* as model, without dropout
-* The *training_model_dropout.ipynb* notebook contains the training of another model using the pretrained embedding, aplying finnetuning and the *model_dropout.py* as model, with dropout
-* The *training_model_without_pre_embedding.ipynb* notebook contains the training of another model without using the pretrained embedding and the *model.py* as model (the same used in the baseline model).
+* The *training_baseline_model.ipynb* notebook contains the training of our baseline model using the pretrained embedding, aplying finnetuning and using the *model.py* as model, WITHOUT dropout
+* The *training_model_2.ipynb* notebook contains the training of another model using the pretrained embedding, aplying finnetuning and using the *model_dropout.py* as model, WITH dropout
+* The *training_model_3.ipynb* notebook contains the training of another model using the pretrained embedding, WITHOUT finnetuning and using the the *model.py* as model (the same used in the baseline model).
+* The *training_model_4.ipynb* notebook contains the training of another model without using the pretrained embedding and the *model.py* as model (the same used in the baseline model).
+* The *training_model_5_3oK.ipynb* notebook contains the training of another model, but in this case using another dataset, the Flick 30k. This dataset is similiar to the Flick 8k but instead of having only 8k images we have 30k images. The model is trained using the petrained embedding, WITHOUT finnetuning (as we observed with the 8k dataset that the qualitative reults where better without using finnnetuning) and using the the *model.py* as model (the same used in the baseline model).
 
 
 ## Further improvements
