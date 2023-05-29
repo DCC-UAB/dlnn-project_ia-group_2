@@ -1,27 +1,55 @@
 # Image Captioning - Group 2 - UAB Deep Learning Course
-Our main proposal for this project is to be able to train an image captioning model based on the [Flickr 8k Dataset on Kaggle](https://www.kaggle.com/datasets/adityajn105/flickr8k).
+Our main proposal for this project is to be able to train an image captioning model based on the [Flickr 8k Dataset on Kaggle](https://www.kaggle.com/datasets/adityajn105/flickr8k), which contains 8,091 images and 5 captions for each image.
+
+<img src="docs/caption_example.png" width="700">
 
 *Click on Image to open Kaggle Dataset page:* 
 
 [<img src="docs/site-logo.svg" width="120"/>](https://www.kaggle.com/datasets/adityajn105/flickr8k)
 
+
+
+caption_example.png
+<br/>
+
 ## General Project Structure
-***Maybe we can omit this paragpraph, since we explain this on the Code structure?***
+Our project is composed by *Python* scripts and notebooks. We made this distinction to make it easy for everyone to diferentiate the already predefined models and methods with the different training runs we did, setting different hyperparameters in order to see differences in results. 
+
+<br/>
 
 ## Model architecture
-Our model architecture is a combination of an encoder CNN network and a decoder LSTM network of two layers. 
+Our model architecture is a combination of an encoder CNN network with a decoder LSTM network of two layers. 
 
-For our CNN encoder we have used the pytorch's pretrained [ResNet-50 model](https://pytorch.org/vision/main/models/generated/torchvision.models.resnet50.html). The softmax from the last layer has been deleted and changed to a fully connected layer that runs through a linear function that feeds the embedding, to afterwards run through the first LSTM input.
+For our CNN encoder we have used the *PyTorch's* pretrained [ResNet-50 model](https://pytorch.org/vision/main/models/generated/torchvision.models.resnet50.html). The softmax from the last layer has been deleted and changed to a fully connected layer that runs through a linear function that feeds the embedding, that afterwards is ran through the first LSTM input.
 
-For our embedding, we have used the 100 dimensions [GloVe pretrained embedding](https://nlp.stanford.edu/projects/glove/). Once the CNN output runs through the embedding, it runs directly into the first LSTM input. We have used a teacher forcing ratio of 0.5 to input each caption's word to the following LSTM cells.
+For our embedding, we have used the 300 dimensions [GloVe pretrained embedding](https://nlp.stanford.edu/projects/glove/). Once the CNN output runs through the embedding, it is sent into the first LSTM cell. To feed the rest of the cells we have used a 100% of teacher forcing, concatenating the image features with the ground-truth words.
+
+<br/>
 
 ## How to run the code
-* As external files, you will need:
-    * The *data* folder, which contains the *Flickr8k* dataset, formed by a folder with 8,091 images, and a .txt with 5 captions for each image.
-    * The *GloVe Embedding* folder, which contains the **.pkl** files and the data files in order to train the LSTM decoder with a pretrained embedding.
-        * It is recommended to download the data from [the GloVe official site](https://nlp.stanford.edu/projects/glove/). *We will be using the Wikipedia 2014 + Gigaword 5 (6B tokens, 400K vocab, uncased, 50d, 100d, 200d, & 300d vectors, 822 MB):* [glove.6B.zip](https://nlp.stanford.edu/data/glove.6B.zip)
 
-Once you have this data, you will need to replicate the environment we used to develop the model. On the *environment.yml* file you will find all libraries needed to imitate our model. We will use *pytorch* as our deep learning framework, and we highly recommended to use CUDA platform to use the GPU potential in order to train the model.
+> To download and install this repository you can either download the **.zip** on the top of this page or you can install *git* on your PC and run the following command on the location you want the repository to be: `git clone https://github.com/DCC-UAB/dlnn-project_ia-group_2.git`. 
+
+<br/>
+
+In order to replicate the project you will need all the dependencies and libraries that were used to develop the model. On the *environment.yml* file you will find all libraries needed to imitate our model. 
+
+> To install the environment on Anaconda use  `conda env create -f environment.yml`  on the directory where the file is located with the Anaconda console. Change the name of the file if you want to give another name to the environment.
+
+> In order to use that environment, run `conda activate <environment_name>`.
+
+*We will be using PyTorch as our Deep Learning framework, and we highly recommended to use CUDA platform to use the GPU potential in order to train the model.*
+
+<br/>
+
+As external files, you will need:
+
+* The *data* folder, which contains the *Flickr8k* dataset, formed by a folder with 8,091 images, and a **.txt** with 5 captions for each image.
+    * In order to run the last model we trained, you will also have to download the [*Flickr30k Dataset on Kaggle*](https://www.kaggle.com/datasets/adityajn105/flickr30k).
+* The *GloVe Embedding* folder, which contains the **.pkl** files and the data files in order to train the LSTM decoder with a pretrained embedding.
+    * It is recommended to download the data from [the GloVe official site](https://nlp.stanford.edu/projects/glove/). *We will be using the Wikipedia 2014 + Gigaword 5 (6B tokens, 400K vocab, uncased, 50d, 100d, 200d, & 300d vectors, 822 MB):* [glove.6B.zip](https://nlp.stanford.edu/data/glove.6B.zip)
+
+<br/>
 
 ## Code Structure
 ### General files:
