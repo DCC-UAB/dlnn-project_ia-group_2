@@ -44,7 +44,6 @@ Once you have this data, you will need to replicate the environment we used to d
 * The *training_model_4.ipynb* notebook contains the training of another model without using the pretrained embedding and the *model.py* as model (the same used in the baseline model).
 * The *training_model_5_3oK.ipynb* notebook contains the training of another model, but in this case using another dataset, the Flick 30k. This dataset is similiar to the Flick 8k but instead of having only 8k images we have 30k images. The model is trained using the petrained embedding, WITHOUT finnetuning (as we observed with the 8k dataset that the qualitative reults where better without using finnnetuning) and using the the *model.py* as model (the same used in the baseline model).
 
-
 ## Further improvements
 We have also trained the model with a much wider dataset, this time containing 30,000 images in total, in order to avoid overfitting and have a more general model. To do so, we used the [Flickr30k dataset](https://www.kaggle.com/datasets/eeshawn/flickr30k), which keeps the same structure as the 8k, but with more information. This way, we do not have to focus on adapting the dataset to our own Dataset and Vocabulary classes.
 
