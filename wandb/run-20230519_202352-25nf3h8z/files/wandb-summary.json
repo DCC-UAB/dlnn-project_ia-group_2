@@ -1,1 +1,0 @@
-{"Optimizer": "Adam (\nParameter Group 0\n    amsgrad: False\n    betas: (0.9, 0.999)\n    capturable: False\n    differentiable: False\n    eps: 1e-08\n    foreach: None\n    fused: None\n    lr: 0.0003\n    maximize: False\n    weight_decay: 0.001\n)", "_timestamp": 1684520638.003643, "_runtime": 1.572540044784546, "_step": 1}
