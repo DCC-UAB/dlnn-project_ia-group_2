@@ -1,3 +1,4 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/wT71nrpQ)
 # Image Captioning - Group 2 - UAB Deep Learning Course
 Our main proposal for this project is to be able to train an image captioning model based on the [Flickr 8k Dataset on Kaggle](https://www.kaggle.com/datasets/adityajn105/flickr8k), which contains 8,091 images and 5 captions for each image.
 
